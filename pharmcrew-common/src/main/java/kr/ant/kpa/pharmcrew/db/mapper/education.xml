@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.education">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<select id="file-select-by-id" resultType="FileVo">
+		select	* from t_file where file_id = #{file_id}
+	</select>
+
+	<select id="admin-select-by-id" resultType="AdminVo">
+		select	* from t_admin where admin_id = #{admin_id}
+	</select>
+
+	<select id="qr-select-by-education-id" resultType="QrVo">
+		select	* from t_qr where education_id = #{education_id} and course_id is null
+	</select>
+
+	<select id="qr-select-by-education-id-and-course-id" resultType="QrVo">
+		select	* from t_qr where education_id = #{education_id} and course_id = #{course_id}
+	</select>
+	
+	<!-- =============================================================================== -->
+	<!-- 교육 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="education-result-map" type="EducationVo">
+		<id property="education_id" column="education_id" />
+		<association property="mapFile" column="map_file_id" javaType="FileVo" select="file-select-by-id" />
+		<association property="timetableFile" column="timetable_file_id" javaType="FileVo" select="file-select-by-id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+		<collection property="qrs" column="education_id" javaType="ArrayList" ofType="QrVo" select="qr-select-by-education-id" />
+	</resultMap>
+	
+	<sql id="education-where">
+		<where>
+			<if test="education_id != null">
+		AND		ORIGIN.education_id = #{education_id}
+			</if>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<if test="is_open != null">
+		AND		ORIGIN.is_open = #{is_open}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="start_date != null">
+		AND		ORIGIN.start_date = #{start_date}
+			</if>
+			<if test="end_date != null">
+		AND		ORIGIN.end_date = #{end_date}
+			</if>
+			<if test="start_time != null">
+		AND		ORIGIN.start_time = #{start_time}
+			</if>
+			<if test="end_time != null">
+		AND		ORIGIN.end_time = #{end_time}
+			</if>
+			<if test="take_min != null">
+		AND		ORIGIN.take_min = #{take_min}
+			</if>
+			<if test="address != null">
+		AND		ORIGIN.address = #{address}
+			</if>
+			<if test="address_detail != null">
+		AND		ORIGIN.address_detail = #{address_detail}
+			</if>
+			<if test="way_guide != null">
+		AND		ORIGIN.way_guide = #{way_guide}
+			</if>
+			<if test="way_detail != null">
+		AND		ORIGIN.way_detail = #{way_detail}
+			</if>
+			<if test="map_file_id != null">
+		AND		ORIGIN.map_file_id = #{map_file_id}
+			</if>
+			<if test="master != null">
+		AND		ORIGIN.master = #{master}
+			</if>
+			<if test="master_phone != null">
+		AND		ORIGIN.master_phone = #{master_phone}
+			</if>
+			<if test="auth_div != null">
+		AND		ORIGIN.auth_div = #{auth_div}
+			</if>
+			<if test="timetable_file_id != null">
+		AND		ORIGIN.timetable_file_id = #{timetable_file_id}
+			</if>
+			<if test="latitude != null">
+		AND		ORIGIN.latitude = #{latitude}
+			</if>
+			<if test="longitude != null">
+		AND		ORIGIN.longitude = #{longitude}
+			</if>
+			<if test="view_cnt != null">
+		AND		ORIGIN.view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="startDate != null or endDate != null">
+				<choose>
+					<when test="startDate != null and endDate != null">
+		and 	(
+				(ORIGIN.start_date <![CDATA[<=]]> #{startDate} and ORIGIN.end_date >= #{startDate})
+			or	(ORIGIN.start_date <![CDATA[<=]]> #{endDate} and ORIGIN.end_date >= #{endDate})
+				)
+					</when>
+					<when test="startDate != null">
+		and		(ORIGIN.start_date <![CDATA[<=]]> #{startDate} and ORIGIN.end_date >= #{startDate})
+					</when>
+					<when test="endDate != null">
+		and		(ORIGIN.start_date <![CDATA[<=]]> #{endDate} and ORIGIN.end_date >= #{endDate})
+					</when>
+				</choose>
+			</if>
+			<if test="pathDownOrganizeId != null">
+		and		find_in_set(ORIGIN.organize_id,	(
+					select	group_concat(organize_id)
+					from	t_organize
+					where	organize_d1_id = #{pathDownOrganizeId}
+					or		organize_d2_id = #{pathDownOrganizeId}
+					or		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+			</if>
+			<if test="keyword != null">
+		AND		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+			<if test="nowOpening != null and nowOpening == true">	<!-- 현재 열려진 것 조회 : is_open 이고, 제거 : 2020.06.10 -beksung- 종료날짜가 현재보다 큰 경우 -->
+		AND		(ORIGIN.is_open = 'Y'
+			<!-- AND CONCAT(DATE_FORMAT(ORIGIN.end_date, '%Y-%m-%d '),left(end_time, 2), ":", right(end_time, 2)) >= DATE_FORMAT(now(), '%Y-%m-%d %H:%i') -->	
+				)	
+			</if>
+			<if test="organize_member_id != null">		<!-- 사용자의 조직에 따라 조회하기 -->
+		AND	 (	find_in_set(ORIGIN.organize_id, 
+							(SELECT
+							    (CASE
+									WHEN depth = '1'
+										THEN concat(organize_d1_id)
+									WHEN depth = '2'
+										THEN concat(organize_d1_id, ',', organize_d2_id)
+									WHEN depth = '3'
+										THEN concat(organize_d1_id, ',', organize_d2_id, ',', organize_d3_id)
+									ELSE null
+									END) AS organize_ids	
+								FROM t_organize
+								where organize_id = (SELECT organize_1_id FROM t_member WHERE member_id = #{organize_member_id})
+								)
+							)
+					OR ORIGIN.organize_id is null <!-- TODO:beksung 나중에 조직이 항상 있을 경우에는 삭제해야 함 -->
+				)
+			</if>
+		</where>
+	</sql>
+
+
+	<insert id="education-insert" parameterType="EducationVo" useGeneratedKeys="true">
+		INSERT	INTO	t_education
+				(title, address, address_detail, way_guide, master, latitude, longitude, reg_id
+		<if test="organize_id != null">
+				, organize_id
+		</if>
+		<if test="is_open != null">
+				, is_open
+		</if>
+		<if test="start_time != null">
+				, start_time
+		</if>
+		<if test="end_time != null">
+				, end_time
+		</if>
+		<if test="take_min != null">
+				, take_min
+		</if>
+		<if test="way_detail != null">
+				, way_detail
+		</if>
+		<if test="map_file_id != null">
+				, map_file_id
+		</if>
+		<if test="master_phone != null">
+				, master_phone
+		</if>
+		<if test="auth_div != null">
+				, auth_div
+		</if>
+		<if test="timetable_file_id != null">
+				, timetable_file_id
+		</if>
+		<if test="view_cnt != null">
+				, view_cnt
+		</if>
+				, start_date, end_date, reg_dt)
+		VALUES (#{title}, #{address}, #{address_detail}, #{way_guide}, #{master}, #{latitude}, #{longitude}, #{reg_id}
+		<if test="organize_id != null">
+				, #{organize_id}
+		</if>
+		<if test="is_open != null">
+				, #{is_open}
+		</if>
+		<if test="start_time != null">
+				, #{start_time}
+		</if>
+		<if test="end_time != null">
+				, #{end_time}
+		</if>
+		<if test="take_min != null">
+				, #{take_min}
+		</if>
+		<if test="way_detail != null">
+				, #{way_detail}
+		</if>
+		<if test="map_file_id != null">
+				, #{map_file_id}
+		</if>
+		<if test="master_phone != null">
+				, #{master_phone}
+		</if>
+		<if test="auth_div != null">
+				, #{auth_div}
+		</if>
+		<if test="timetable_file_id != null">
+				, #{timetable_file_id}
+		</if>
+		<if test="view_cnt != null">
+				, #{view_cnt}
+		</if>
+				, #{start_date}, #{end_date}, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="education_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="education-select" parameterType="Map" resultMap="education-result-map">
+		SELECT	ORIGIN.*
+			,	(SELECT name FROM t_organize WHERE organize_id = ORIGIN.organize_id) as organizeName	<!-- 조직 이름 추출 : beksung -->
+		<if test="withApprovalCnt != null and withApprovalCnt == true">	<!-- 관리자에 의해 인정된 참석자 수 -->
+			,	(select count(attend_id) from t_member_education where education_id = ORIGIN.education_id and approval = 'Y') as approvalCnt
+		</if>
+		FROM	t_education	ORIGIN
+
+		<include refid="education-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="education-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.education_id)
+		FROM	t_education	ORIGIN
+		<include refid="education-where"/>
+	</select>
+
+	<update id="education-update" parameterType="EducationVo">
+		UPDATE	t_education
+		SET
+				mod_dt = now()
+			<if test="is_open != null">
+			,	is_open = #{is_open}
+			</if>
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="start_date != null">
+			,	start_date = #{start_date}
+			</if>
+			<if test="end_date != null">
+			,	end_date = #{end_date}
+			</if>
+			<if test="start_time != null">
+			,	start_time = #{start_time}
+			</if>
+			<if test="end_time != null">
+			,	end_time = #{end_time}
+			</if>
+			<if test="take_min != null">
+			,	take_min = #{take_min}
+			</if>
+			<if test="address != null">
+			,	address = #{address}
+			</if>
+			<if test="address_detail != null">
+			,	address_detail = #{address_detail}
+			</if>
+			<if test="way_guide != null">
+			,	way_guide = #{way_guide}
+			</if>
+			<if test="way_detail != null">
+			,	way_detail = #{way_detail}
+			</if>
+			<if test="map_file_id != null">
+			,	map_file_id = #{map_file_id}
+			</if>
+			<if test="master != null">
+			,	master = #{master}
+			</if>
+			<if test="master_phone != null">
+			,	master_phone = #{master_phone}
+			</if>
+			<if test="auth_div != null">
+			,	auth_div = #{auth_div}
+			</if>
+			<if test="timetable_file_id != null">
+			,	timetable_file_id = #{timetable_file_id}
+			</if>
+			<if test="latitude != null">
+			,	latitude = #{latitude}
+			</if>
+			<if test="longitude != null">
+			,	longitude = #{longitude}
+			</if>
+			<if test="view_cnt != null">
+			,	view_cnt = #{view_cnt}
+			</if>
+			<if test="mapFileIdNull != null and mapFileIdNull == true">
+			,	map_file_id = null
+			</if>
+			<if test="timetableFileIdNull != null and timetableFileIdNull == true">
+			,	timetable_file_id = null
+			</if>
+		WHERE
+				education_id = #{education_id}
+	</update>
+
+	<delete id="education-delete" parameterType="EducationVo">
+		DELETE
+		FROM	t_education
+		WHERE	education_id = #{education_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 강의 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="educationcourse-result-map" type="EducationCourseVo">
+		<id property="course_id" column="course_id" />
+		<collection property="qrs" column="course_id=course_id, education_id=education_id" javaType="ArrayList" ofType="QrVo" select="qr-select-by-education-id-and-course-id" />
+	</resultMap>
+
+	<sql id="educationcourse-where">
+		<where>
+			<if test="course_id != null">
+		AND		ORIGIN.course_id = #{course_id}
+			</if>
+			<if test="education_id != null">
+		AND		ORIGIN.education_id = #{education_id}
+			</if>
+			<if test="days != null">
+		AND		ORIGIN.days = #{days}
+			</if>
+			<if test="idx != null">
+		AND		ORIGIN.idx = #{idx}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="teacher != null">
+		AND		ORIGIN.teacher = #{teacher}
+			</if>
+			<if test="type != null">
+		AND		ORIGIN.type = #{type}
+			</if>
+			<if test="room != null">
+		AND		ORIGIN.room = #{room}
+			</if>
+			<if test="start_time != null">
+		AND		ORIGIN.start_time = #{start_time}
+			</if>
+			<if test="end_time != null">
+		AND		ORIGIN.end_time = #{end_time}
+			</if>
+			<if test="take_min != null">
+		AND		ORIGIN.take_min = #{take_min}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="educationcourse-insert" parameterType="EducationCourseVo" useGeneratedKeys="true">
+		INSERT	INTO	t_education_course
+				(education_id, idx, title, teacher, type, start_time, end_time
+		<if test="days != null">
+				, days
+		</if>
+		<if test="room != null">
+				, room
+		</if>
+		<if test="take_min != null">
+				, take_min
+		</if>
+				)
+		VALUES (#{education_id}, #{idx}, #{title}, #{teacher}, #{type}, #{start_time}, #{end_time}
+		<if test="days != null">
+				, #{days}
+		</if>
+		<if test="room != null">
+				, #{room}
+		</if>
+		<if test="take_min != null">
+				, #{take_min}
+		</if>
+				)
+		<selectKey resultType="Long" order="AFTER" keyProperty="course_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="educationcourse-select" parameterType="Map" resultMap="educationcourse-result-map">
+		SELECT	ORIGIN.*
+		<if test="withAttendCnt != null and withAttendCnt == true">
+			,	if (ORIGIN.course_id is null,
+					(select count(attend_id) from t_member_education where education_id = ORIGIN.education_id and course_id is null),
+					(select count(attend_id) from t_member_education where education_id = ORIGIN.education_id and course_id = ORIGIN.course_id)
+				) as attendCnt
+		</if>
+		FROM	t_education_course	ORIGIN
+
+		<include refid="educationcourse-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="educationcourse-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.course_id)
+		FROM	t_education_course	ORIGIN
+		<include refid="educationcourse-where"/>
+	</select>
+
+	<update id="educationcourse-update" parameterType="EducationCourseVo">
+		UPDATE	t_education_course
+		SET
+				course_id = #{course_id}
+			<if test="days != null">
+			,	days = #{days}
+			</if>
+			<if test="idx != null">
+			,	idx = #{idx}
+			</if>
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="teacher != null">
+			,	teacher = #{teacher}
+			</if>
+			<if test="type != null">
+			,	type = #{type}
+			</if>
+			<if test="room != null">
+			,	room = #{room}
+			</if>
+			<if test="start_time != null">
+			,	start_time = #{start_time}
+			</if>
+			<if test="end_time != null">
+			,	end_time = #{end_time}
+			</if>
+			<if test="take_min != null">
+			,	take_min = #{take_min}
+			</if>
+		WHERE
+				course_id = #{course_id}
+	</update>
+
+	<delete id="educationcourse-delete" parameterType="EducationCourseVo">
+		DELETE
+		FROM	t_education_course
+		WHERE	course_id = #{course_id}
+	</delete>
+
+	<insert id="educationcourse-merge-list" parameterType="Map">
+		insert	into t_education_course
+				(course_id, education_id, days, idx, title, teacher, type, room, start_time, end_time, take_min)
+		values
+		<foreach item="course" collection="courses" separator=",">
+				(#{course.course_id}, #{course.education_id}, #{course.days}, #{course.idx}, #{course.title}, #{course.teacher}, #{course.type}, #{course.room}, #{course.start_time}, #{course.end_time}, #{course.take_min})
+		</foreach>
+		on		duplicate key
+		update	education_id = values(education_id),
+				days = values(days),
+				idx = values(idx),
+				title = values(title),
+				teacher = values(teacher),
+				type = values(type),
+				room = values(room),
+				start_time = values(start_time),
+				end_time = values(end_time),
+				take_min = values(take_min)
+	</insert>
+
+	<delete id="educationcourse-delete-map" parameterType="Map">
+		delete
+		from	t_education_course
+		where
+		<if test="education_id != null">
+				education_id = #{education_id}
+		</if>
+	</delete>
+
+</mapper>
+

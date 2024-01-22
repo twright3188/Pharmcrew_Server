@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.survey">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<select id="admin-select-by-id" resultType="AdminVo">
+		select	* from t_admin where admin_id = #{admin_id}
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- 설문 -->
+	<!-- =============================================================================== -->
+
+	<sql id="survey-where">
+		<where>
+			<if test="survey_id != null">
+		AND		ORIGIN.survey_id = #{survey_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="detail != null">
+		AND		ORIGIN.detail = #{detail}
+			</if>
+			<if test="is_open != null">
+		AND		ORIGIN.is_open = #{is_open}
+			</if>
+			<if test="open_result != null">
+		AND		ORIGIN.open_result = #{open_result}
+			</if>
+			<if test="start_date != null">
+		AND		ORIGIN.start_date = #{start_date}
+			</if>
+			<if test="end_date != null">
+		AND		ORIGIN.end_date = #{end_date}
+			</if>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="IsProgress != null and IsProgress == true">		<!-- 진행 중 프로모션 조회 : 현재일자가 시작/종료 사이에 있는 경우 -->
+		AND		date_format(now(), '%Y-%m-%d')  BETWEEN date_format( ORIGIN.start_dt, '%Y-%m-%d') AND date_format(ORIGIN.end_dt, '%Y-%m-%d')
+			</if>
+			<if test="startDate != null or endDate != null">
+				<choose>
+					<when test="startDate != null and endDate != null">
+		and 	(
+				(ORIGIN.start_date <![CDATA[<=]]> #{startDate} and ORIGIN.end_date >= #{startDate})
+			or	(ORIGIN.start_date <![CDATA[<=]]> #{endDate} and ORIGIN.end_date >= #{endDate})
+				)
+					</when>
+					<when test="startDate != null">
+		and		(ORIGIN.start_date <![CDATA[<=]]> #{startDate} and ORIGIN.end_date >= #{startDate})
+					</when>
+					<when test="endDate != null">
+		and		(ORIGIN.start_date <![CDATA[<=]]> #{endDate} and ORIGIN.end_date >= #{endDate})
+					</when>
+				</choose>
+			</if>
+			<if test="pathDownOrganizeId != null">
+		and		find_in_set(ORIGIN.organize_id,	(
+												select	group_concat(organize_id)
+												from	t_organize
+												where	organize_d1_id = #{pathDownOrganizeId}
+												or		organize_d2_id = #{pathDownOrganizeId}
+												or		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+			</if>
+			<if test="keyword != null">
+		and		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+		</where>
+	</sql>
+
+	<resultMap id="survey-result-map" type="SurveyVo">
+		<id property="survey_id" column="survey_id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+	</resultMap>
+
+	<insert id="survey-insert" parameterType="SurveyVo" useGeneratedKeys="true">
+		INSERT	INTO	t_survey
+				(title, detail, reg_id
+		<if test="is_open != null">
+				, is_open
+		</if>
+		<if test="open_result != null">
+				, open_result
+		</if>
+		<if test="organize_id != null">
+				, organize_id
+		</if>
+				, start_date, end_date, reg_dt)
+		VALUES (#{title}, #{detail}, #{reg_id}
+		<if test="is_open != null">
+				, #{is_open}
+		</if>
+		<if test="open_result != null">
+				, #{open_result}
+		</if>
+		<if test="organize_id != null">
+				, #{organize_id}
+		</if>
+				, #{start_date}, #{end_date}, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="survey_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="survey-select" parameterType="Map" resultMap="survey-result-map">
+		SELECT	ORIGIN.*
+		<if test="withMine != null and withMine==true and member_id != null">		<!-- 멤버가 설정한 값을 가져오기 위해 : beksung -->
+			, IFNULL( (SELECT IFNULL('Y', 'N') FROM t_member_survey WHERE survey_id = ORIGIN.survey_id AND member_id = #{member_id} LIMIT 0,1), 'N') as isComplete
+		</if>
+		<if test="withJoinMemberCnt != null and withJoinMemberCnt == true">
+			,	(
+			    select	count(distinct member_id) from t_member_survey where survey_id = ORIGIN.survey_id
+				) as joinMemberCnt
+		</if>
+		FROM	t_survey	ORIGIN
+
+		<include refid="survey-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="survey-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.survey_id)
+		FROM	t_survey	ORIGIN
+		<include refid="survey-where"/>
+	</select>
+
+	<update id="survey-update" parameterType="SurveyVo">
+		UPDATE	t_survey
+		SET
+				mod_dt = now()
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="detail != null">
+			,	detail = #{detail}
+			</if>
+			<if test="is_open != null">
+			,	is_open = #{is_open}
+			</if>
+			<if test="open_result != null">
+			,	open_result = #{open_result}
+			</if>
+			<if test="organize_id != null">
+			,	organize_id = #{organize_id}
+			</if>
+			<if test="start_date != null">
+			,	start_date = #{start_date}
+			</if>
+			<if test="end_date != null">
+			,	end_date = #{end_date}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="organizeIdSetNull != null and organizeIdSetNull == true">
+			,	organize_id = null
+			</if>
+			<if test="endDateNull != null and endDateNull == true">
+			,	end_date = null
+			</if>
+		WHERE
+				survey_id = #{survey_id}
+	</update>
+
+	<delete id="survey-delete" parameterType="SurveyVo">
+		DELETE
+		FROM	t_survey
+		WHERE	survey_id = #{survey_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 설문 문항 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="surveyquestion-result-map" type="SurveyQuestionVo">
+		<collection property="answers" column="survey_id=survey_id, question_idx=question_idx" javaType="ArrayList" ofType="SurveyAnswerChoiceVo" select="surveyanswerchoice-select" />
+	</resultMap>
+
+	<sql id="surveyquestion-where">
+		<where>
+			<if test="survey_id != null">
+		AND		ORIGIN.survey_id = #{survey_id}
+			</if>
+			<if test="question_idx != null">
+		AND		ORIGIN.question_idx = #{question_idx}
+			</if>
+			<if test="question != null">
+		AND		ORIGIN.question = #{question}
+			</if>
+			<if test="answer_div != null">
+		AND		ORIGIN.answer_div = #{answer_div}
+			</if>
+			<if test="answer_cnt != null">
+		AND		ORIGIN.answer_cnt = #{answer_cnt}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="surveyquestion-insert" parameterType="SurveyQuestionVo">
+		INSERT	INTO	t_survey_question
+				(survey_id, question_idx, question, answer_div
+		<if test="answer_cnt != null">
+				, answer_cnt
+		</if>
+				)
+		VALUES (#{survey_id}, #{question_idx}, #{question}, #{answer_div}
+		<if test="answer_cnt != null">
+				, #{answer_cnt}
+		</if>
+				)
+	</insert>
+
+	<select id="surveyquestion-select" parameterType="Map" resultMap="surveyquestion-result-map">
+		SELECT	ORIGIN.*
+		<if test="withMine != null and withMine==true and member_id != null">		<!-- 멤버가 설문한 정답을 확인 : beksung -->
+			, 	IFNULL( (SELECT answer FROM t_member_survey WHERE survey_id = ORIGIN.survey_id AND question_idx = ORIGIN.question_idx AND member_id = #{member_id}), '') as myAnswer
+		</if>
+		FROM	t_survey_question	ORIGIN
+
+		<include refid="surveyquestion-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="surveyquestion-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.survey_id)
+		FROM	t_survey_question	ORIGIN
+		<include refid="surveyquestion-where"/>
+	</select>
+
+	<update id="surveyquestion-update" parameterType="SurveyQuestionVo">
+		UPDATE	t_survey_question
+		SET
+				survey_id = #{survey_id}
+			,	question_idx = #{question_idx}
+			<if test="question != null">
+			,	question = #{question}
+			</if>
+			<if test="answer_div != null">
+			,	answer_div = #{answer_div}
+			</if>
+			<if test="answer_cnt != null">
+			,	answer_cnt = #{answer_cnt}
+			</if>
+		WHERE
+				survey_id = #{survey_id}
+				AND question_idx = #{question_idx}
+	</update>
+
+	<delete id="surveyquestion-delete" parameterType="SurveyQuestionVo">
+		DELETE
+		FROM	t_survey_question
+		WHERE	survey_id = #{survey_id}	AND question_idx = #{question_idx}
+	</delete>
+
+	<insert id="surveyquestion-merge-list" parameterType="Map">
+		insert	into t_survey_question
+				(survey_id, question_idx, question, answer_div)
+		values
+		<foreach item="question" collection="questions" separator=",">
+				(#{survey_id}, #{question.question_idx}, #{question.question}, #{question.answer_div})
+		</foreach>
+		on		duplicate key
+		update	question = values(question),
+		        answer_div = values(answer_div)
+	</insert>
+
+	<!-- 질문에 답변한 사용자 수 업데이트 -->
+	<update id="surveyquestion-list-update" parameterType="Map">
+		<foreach item="answer" collection="answers" separator=";">
+		UPDATE	t_survey_question
+		SET
+				answer_cnt = answer_cnt+1
+		WHERE
+				survey_id = #{survey_id}
+		AND		question_idx = #{answer.question_idx}
+		</foreach>
+	</update>
+
+
+
+	<!-- =============================================================================== -->
+	<!-- 설문 답변(객관식) -->
+	<!-- =============================================================================== -->
+
+	<sql id="surveyanswerchoice-where">
+		<where>
+			<if test="survey_id != null">
+		AND		ORIGIN.survey_id = #{survey_id}
+			</if>
+			<if test="question_idx != null">
+		AND		ORIGIN.question_idx = #{question_idx}
+			</if>
+			<if test="answer_no != null">
+		AND		ORIGIN.answer_no = #{answer_no}
+			</if>
+			<if test="answer != null">
+		AND		ORIGIN.answer = #{answer}
+			</if>
+			<if test="answer_cnt != null">
+		AND		ORIGIN.answer_cnt = #{answer_cnt}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="surveyanswerchoice-insert" parameterType="SurveyAnswerChoiceVo">
+		INSERT	INTO	t_survey_answer_choice
+				(survey_id, question_idx, answer_no, answer
+		<if test="answer_cnt != null">
+				, answer_cnt
+		</if>
+				)
+		VALUES (#{survey_id}, #{question_idx}, #{answer_no}, #{answer}
+		<if test="answer_cnt != null">
+				, #{answer_cnt}
+		</if>
+				)
+	</insert>
+
+	<select id="surveyanswerchoice-select" parameterType="Map" resultType="SurveyAnswerChoiceVo">
+		SELECT	ORIGIN.*
+		FROM	t_survey_answer_choice	ORIGIN
+
+		<include refid="surveyanswerchoice-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="surveyanswerchoice-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.survey_id)
+		FROM	t_survey_answer_choice	ORIGIN
+		<include refid="surveyanswerchoice-where"/>
+	</select>
+
+	<update id="surveyanswerchoice-update" parameterType="SurveyAnswerChoiceVo">
+		UPDATE	t_survey_answer_choice
+		SET
+				survey_id = #{survey_id}
+			,	question_idx = #{question_idx}
+			,	answer_no = #{answer_no}
+			<if test="answer != null">
+			,	answer = #{answer}
+			</if>
+			<if test="answer_cnt != null">
+			,	answer_cnt = #{answer_cnt}
+			</if>
+		WHERE
+				survey_id = #{survey_id}
+				AND question_idx = #{question_idx}
+				AND answer_no = #{answer_no}
+	</update>
+
+	<delete id="surveyanswerchoice-delete" parameterType="SurveyAnswerChoiceVo">
+		DELETE
+		FROM	t_survey_answer_choice
+		WHERE	survey_id = #{survey_id}	AND question_idx = #{question_idx}	AND answer_no = #{answer_no}
+	</delete>
+
+	<insert id="surveyanswerchoice-merge-list" parameterType="Map">
+		insert	into t_survey_answer_choice
+				(survey_id, question_idx, answer_no, answer)
+		values
+		<foreach item="answer" collection="answers" separator=",">
+				(#{survey_id}, #{answer.question_idx}, #{answer.answer_no}, #{answer.answer})
+		</foreach>
+		on		duplicate key
+		update	answer = values(answer)
+	</insert>
+	
+	<!-- 질문에 답변한 사용자 수 업데이트 -->
+	<update id="surveyanswerchoice-list-update" parameterType="Map">
+		<foreach item="answer" collection="answers" separator=";">
+		UPDATE	t_survey_answer_choice
+		SET
+				answer_cnt = answer_cnt+1
+		WHERE
+				survey_id = #{survey_id}
+		AND		question_idx = #{answer.question_idx}
+		AND 	answer_no = #{answer.answer}
+		</foreach>
+	</update>
+
+</mapper>
+

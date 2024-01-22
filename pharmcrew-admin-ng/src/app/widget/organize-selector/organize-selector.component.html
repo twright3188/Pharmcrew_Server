@@ -1,0 +1,12 @@
+                                <select [(ngModel)]="organize1Id" (change)="onOrganizeChange(1)" [disabled]="disabled || !organize1Enable">
+                                    <option value='undefined'>약사회전체</option>
+                                    <option value="{{organize.organizeId}}" *ngFor="let organize of organizess[0]; index as idx">{{organize.name}}</option>
+                                </select>
+                                <select [(ngModel)]="organize2Id" (change)="onOrganizeChange(2)" [disabled]="disabled || !organize2Enable">
+                                    <option value='undefined'>지부 전체</option>
+                                    <option value="{{organize.organizeId}}" *ngFor="let organize of organizess[1]; index as idx">{{organize.name}}</option>
+                                </select>
+                                <select [(ngModel)]="organize3Id" (change)="onOrganizeChange(3)" [disabled]="disabled || !organize3Enable">
+                                    <option value='undefined'>분회 전체</option>
+                                    <option value="{{organize.organizeId}}" *ngFor="let organize of organizess[2]; index as idx">{{organize.name}}</option>
+                                </select>

@@ -1,0 +1,194 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">교육{{type === 'A' ? ' 이수': ''}} 관리</h1>
+        <div class="f_r mt_20">Home > 교육 관리 > <span class="fw_600">교육{{type === 'A' ? ' 이수': ''}} 관리</span></div>
+    </div>
+
+    <!-- Search -->
+    <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+    <div class="search_wrap mt_20">
+        <div class="search_title"><i class="fa fa-search"></i> Search</div>
+        <table class="search_tb">
+            <colgroup>
+                <col style="width:150px" />
+                <col style="width:*" />
+                <col style="width:150px" />
+                <col style="width:*" />
+            </colgroup>
+            <tr>
+                <th>교육일</th>
+                <td>
+                    <input type="text" id="datepicker1" class="mr_5" name="startDate"
+                        #startDate [(ngModel)]="req.startDate"
+                        (click)="req.startDate = startDate.value"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                    ~
+                    <input type="text" id="datepicker2" class="mr_5" name="endDate"
+                        #endDate [(ngModel)]="req.endDate"
+                        (click)="req.endDate = endDate.value"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                </td>
+            </tr>
+            <tr>
+                <th>약사회 선택</th>
+                <td>
+                    <widget-organize-selector #organizeSelector></widget-organize-selector>
+                </td>
+            </tr>
+            <tr>
+                <th>검색어</th>
+                <td colspan="3">
+                    <!-- <select>
+                        <option>전체</option>
+                    </select> -->
+                    <input type="text" placeholder="검색 조건을 입력 해주세요." class="Width-70" name="keyword" [(ngModel)]="req.keyword" />
+                </td>
+            </tr>
+            <tr>
+                <th>노출 여부</th>
+                <td colspan="3">
+                    <input type="radio" name="isOpen" value="ALL" [(ngModel)]="req.isOpen" /> 전체
+                    <input type="radio" class="ml_10" name="isOpen" value="Y" [(ngModel)]="req.isOpen" /> 노출
+                    <input type="radio" class="ml_10" name="isOpen" value="N" [(ngModel)]="req.isOpen" /> 비노출
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="search_btn">
+        <button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button>
+        <!-- <a [routerLink]="['/educations', -1]" class="f_r bg_14" *ngIf="type === 'E'">등록</a> -->
+        <a (click)="onClickItem(-1)" class="f_r bg_14" *ngIf="type === 'E'">등록</a>
+    </div>
+    </form>
+    <!-- Search -->
+
+    <!-- Table list -->
+    <table class="tb_list01 mt_30">
+        <colgroup>
+            <col style="width:80px" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:*" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>약사회 구분</th>
+                <th>교율일</th>
+                <th>교육제목</th>
+                <th>등록자</th>
+                <th>노출여부</th>
+                <th *ngIf="type === 'E'">조회수</th>
+                <th *ngIf="type === 'A'">이수완료</th>
+                <th>등록일</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngIf="educations === undefined">
+                <td colspan="10">등록(검색)된 교육이 없습니다.</td>
+            </tr>
+            <tr *ngFor="let education of educations; index as idx">
+                <td>{{education.educationId}}</td>
+                <td>{{education.organize === undefined ? '전체' : education.organize.names.toString().split(',').join(' > ')}}</td>
+                <td>{{education.startDate}} ~ {{education.endDate}}</td>
+                <td class="text_l">
+                    <!-- <a class="line" [routerLink]="['/educations', education.educationId]" *ngIf="type === 'E'">{{education.title}}</a>
+                    <a class="line" [routerLink]="['/eduapprovals', education.educationId]" *ngIf="type === 'A'">{{education.title}}</a> -->
+                    <a class="line" (click)="onClickItem(education.educationId)">{{education.title}}</a>
+                </td>
+                <td>{{education.regName}}</td>
+                <td>{{education.isOpen === 'Y' ? '노출' : education.isOpen === 'N' ? '비노출' : education.isOpen}}</td>
+                <td *ngIf="type === 'E'">{{education.viewCnt | number}}</td>
+                <td *ngIf="type === 'A'"><a class="line" (click)="onApproveCntClick(education.educationId)">{{education.approvalCnt | number}}</a></td>
+                <td>{{education.regDt | date: 'yyyy.MM.dd'}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+    <!--// Table list -->
+
+    <!-- Button -->
+    <!-- <div class="btn_wrap text_r mt_20">
+        <a [routerLink]="['/educations', -1]" class="button01 bg_14">등록</a>
+    </div> -->
+    <!--// Button -->
+
+</div>
+<!-- Right Wrap -->
+
+<!-- popup -->
+<!-- 승인팝업 -->
+<div id="ist02_popup" class="popup_wrap">
+    <div class="popup_head">
+        <h2>참여 회원</h2>
+        <a id="close" (click)="onClosePopupClick()"><img src="/assets/images/ico_close.png"></a>
+    </div>
+    <div class="popup_contents">
+        <form #approveSearchForm="ngForm" (ngSubmit)="onSubmitApproveSearch()">
+        <p class="text_c">
+            <!-- <select>
+                <option>전체</option>
+            </select> -->
+            <input type="text" placeholder="이름을 입력 해주세요." class="Width-50" name="keyword" [(ngModel)]="attendListReq.keyword" />
+            <!-- <a href="#none" class="button02 bg_04">검색</a> -->
+            <button type="submit" class="button02 bg_04" [disabled]=!approveSearchForm.form.valid>검색</button>
+        </p>
+        </form>
+        <!-- Table list -->
+        <table class="tb_list01 mt_30">
+            <colgroup>
+                <col style="width:50px" *ngIf="attendModify === true" />
+                <col style="width:80px" />
+                <col style="width:*" />
+                <col style="width:*" />
+                <col style="width:*" />
+                <col style="width:*" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th *ngIf="attendModify === true"><input type="checkbox" [checked]="attendCheckAll" (click)="onAttendCheckAll($event.target.checked)"/></th>
+                    <th>No.</th>
+                    <th>회원이름</th>
+                    <th>출결시간</th>
+                    <th>총 출석 시간</th>
+                    <th>교육이수 승인여부</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngIf="attends === undefined">
+                    <td colspan="6">검색된 회원이 없습니다.</td>
+                </tr>
+                <tr *ngFor="let attend of attends; index as idx">
+                    <td *ngIf="attendModify === true"><input type="checkbox" [checked]="attendChecks[idx]" (click)="onAttendCheck(idx, $event.target.checked)" /></td>
+                    <td>{{(attendListReq.page-1) * attendListReq.cntPerPage + idx+1}}</td>
+                    <td>{{attend.memberName}}</td>
+                    <td>
+                        <p>출석 {{attend.startDt | date: 'yyyy.MM.dd HH.mm'}}</p>
+                        <p>종료 {{attend.endDt === undefined ? '-' : attend.endDt | date: 'yyyy.MM.dd HH.mm'}}</p>
+                    </td>
+                    <td>{{diffStr(attend.startDt, attend.endDt)}}</td>
+                    <td>{{attend.approval === 'R' ? '승인대기' : attend.approval === 'Y' ? '승인완료' : attend.approval === 'N' ? '미승인' : attend.approval}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <widget-pagination #attendPagination (onPage)="onAttendListPageClick($event)"></widget-pagination>
+        <!--// Table list -->
+        <!-- Button -->
+        <div class="btn_wrap text_c mt_20">
+            <a id="save" class="button01 bg_03" (click)="onClosePopupClick()" *ngIf="attendModify === true">취소</a>
+            <a id="save" class="button01 bg_03" (click)="onAttendApprovalClick('N')" *ngIf="attendModify === true">미승인</a>
+            <a id="save" class="button01 bg_14" (click)="onAttendApprovalClick('Y')" *ngIf="attendModify === true">승인완료</a>
+            <a id="save" class="button01 bg_14" (click)="onAttendModifyClick()" *ngIf="attendModify === false">교육이수 승인</a>
+        </div>
+        <!--// Button -->
+    </div>
+</div>
+<!--// 승인팝업 -->
+
+
+<div id="fade" class="black_overlay"></div>
+<!--// popup -->

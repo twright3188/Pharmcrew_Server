@@ -1,0 +1,118 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">설문조사 관리</h1>
+        <div class="f_r mt_20">Home > 고객서비스 관리 > <span class="fw_600">설문조사 관리</span></div>
+    </div>
+
+    <!-- Search -->
+    <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+    <div class="search_wrap mt_20">
+        <div class="search_title"><i class="fa fa-search"></i> Search</div>
+        <table class="search_tb">
+            <colgroup>
+                <col style="width:150px" />
+                <col style="width:*" />
+                <col style="width:150px" />
+                <col style="width:*" />
+            </colgroup>
+            <tr>
+                <th>교육일</th>
+                <td>
+                    <input type="text" id="datepicker1" class="mr_5" name="startDate"
+                        #startDate [(ngModel)]="req.startDate"
+                        (click)="req.startDate = startDate.value"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                    ~
+                    <input type="text" id="datepicker2" class="mr_5" name="endDate"
+                        #endDate [(ngModel)]="req.endDate"
+                        (click)="req.endDate = endDate.value"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                </td>
+            </tr>
+            <tr>
+                <th>약사회 선택</th>
+                <td>
+                    <widget-organize-selector #organizeSelector></widget-organize-selector>
+                </td>
+            </tr>
+            <tr>
+                <th>검색어</th>
+                <td colspan="3">
+                    <!-- <select>
+                        <option>전체</option>
+                    </select> -->
+                    <input type="text" placeholder="검색 조건을 입력 해주세요." class="Width-70" name="keyword" [(ngModel)]="req.keyword" />
+                </td>
+            </tr>
+            <tr>
+                <th>노출 여부</th>
+                <td colspan="3">
+                    <input type="radio" name="isOpen" value="ALL" [(ngModel)]="req.isOpen" /> 전체
+                    <input type="radio" class="ml_10" name="isOpen" value="Y" [(ngModel)]="req.isOpen" /> 노출
+                    <input type="radio" class="ml_10" name="isOpen" value="N" [(ngModel)]="req.isOpen" /> 비노출
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="search_btn">
+        <button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button>
+        <!-- <a [routerLink]="['/surveys', -1]" class="f_r bg_14">등록</a> -->
+        <a (click)="onClickItem(-1)" class="f_r bg_14">등록</a>
+    </div>
+    </form>
+    <!-- Search -->
+
+    <!-- Table list -->
+    <table class="tb_list01 mt_30">
+        <colgroup>
+            <col style="width:80px" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:*" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>약사회 구분</th>
+                <th>설문기간</th>
+                <th>설문제목</th>
+                <th>등록자</th>
+                <th>노출여부</th>
+                <th>참여수</th>
+                <th>등록일</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngIf="surveys === undefined">
+                <td colspan="8">등록(검색)된 설문조가가 없습니다.</td>
+            </tr>
+            <tr *ngFor="let survey of surveys; index as idx">
+                <td>{{survey.surveyId}}</td>
+                <td>{{survey.organize === undefined ? '전체' : survey.organize.names.toString().split(',').join(' > ')}}</td>
+                <td>{{survey.startDate | date: 'yyyy.MM.dd'}} ~ {{survey.endDate !== undefined ? (survey.endDate | date: 'yyyy.MM.dd') : '완료시'}}</td>
+                <!-- <td class="text_l"><a class="line" [routerLink]="['/surveys', survey.surveyId]">{{survey.title}}</a></td> -->
+                <td class="text_l"><a class="line" (click)="onClickItem(survey.surveyId)">{{survey.title}}</a></td>
+                <td>{{survey.regName}}</td>
+                <td>{{survey.isOpen === 'Y' ? '노출' : survey.isOpen === 'N' ? '비노출' : survey.isOpen}}</td>
+                <td>{{survey.joinMemberCnt | number}}</td>
+                <td>{{survey.regDt | date: 'yyyy.MM.dd'}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+    <!--// Table list -->
+    
+    <!-- Button -->
+    <!-- <div class="btn_wrap text_r mt_20">
+        <a [routerLink]="['/surveys', -1]" class="button01 bg_14">등록</a>
+    </div> -->
+    <!--// Button -->
+
+
+</div>
+<!-- Right Wrap -->

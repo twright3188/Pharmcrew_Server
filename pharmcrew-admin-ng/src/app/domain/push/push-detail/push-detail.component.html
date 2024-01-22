@@ -1,0 +1,128 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">{{categoryType === 'AD' ? '마케팅 알림' : categoryType === 'NT' ? '약사회 알림' : categoryType}} {{push.pushId === undefined ? '등록' : '수정'}}</h1>
+                    <div class="f_r mt_20">Home > {{categoryType === 'AD' ? '광고' : categoryType === 'NT' ? '알림' : categoryType}} 관리 > {{categoryType === 'AD' ? '마케팅 알림' : categoryType === 'NT' ? '약사회 알림' : categoryType}} 관리 > <span class="fw_600">{{push.pushId === undefined ? '등록' : '수정'}}</span></div>
+                </div>
+
+                <div class="clear_wrap mt_10">
+                    <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+                </div>
+                <!-- Table View -->
+                <table class="tb_view01 mt_10">
+                    <colgroup>
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <tr *ngIf="push.pushId !== undefined">
+                        <th>발송 상태</th>
+                        <td>{{push.state === 'R' ? '발송대기중' : push.state === 'S' ? '발송' : push.state}}</td>
+                        <th>등록일</th>
+                        <td>{{push.regDt | date: 'yyyy.MM.dd'}}</td>
+                    </tr>
+                    <tr>
+                        <th>발송 옵션<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <input type="radio" name="sendType" value="I" [(ngModel)]="sendType" (change)="onChangeSendType()" /> 즉시발송
+                            <input type="radio" class="ml_10" name="sendType" value="R" [(ngModel)]="sendType" (change)="onChangeSendType()" /> 예약발송
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>발송 OS<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <input type="radio" name="osType" value="ALL" [(ngModel)]="push.osType" /> 전체
+                            <input type="radio" class="ml_10" name="osType" value="A" [(ngModel)]="push.osType" /> Android
+                            <input type="radio" class="ml_10" name="osType" value="I" [(ngModel)]="push.osType" /> IOS
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>발송일시<span class="tb_star">*</span></th>
+
+                        <td colspan="3">
+                            <input type="text" id="datepicker1" class="mr_5" name="reserveDate"
+                                #reserveDate [(ngModel)]="push.reserveDate"
+                                (click)="push.reserveDate = reserveDate.value"
+                                [disabled]="sendType === 'I'"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                            <select class="ml_10 mr_10" name="reserveHour" [(ngModel)]="push.reserveHour" [disabled]="sendType === 'I'">
+                                <option value="{{hour | numPad: 2}}" *ngFor="let hour of 24 | numLoop">{{hour | numPad: 2}}시</option>
+                            </select>
+                            <select class="ml_10 mr_10" name="reserveMinute" [(ngModel)]="push.reserveMinute" [disabled]="sendType === 'I'">
+                                <option value="{{minute | numPad: 2}}" *ngFor="let minute of 60 | numLoop">{{minute | numPad: 2}}분</option>
+                            </select>
+                            <p class="font_14 fs_12 mt_10">* 국내 정보통신망법에 의거하여 오후9시~오전8시에는 푸시 발송이 불가능합니다.(수신자 도달 시간 기준)</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>수신자대상 선택<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <!-- <select class="ml_10 mr_10 ">
+                                <option>서울특별시지부</option>
+                            </select>
+                            <select class="ml_10 mr_10 ">
+                                <option>선택안함</option>
+                            </select> -->
+                            <widget-organize-selector #organizeSelector></widget-organize-selector>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>푸시 제목<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <p><input type="text" placeholder="제목을 입력하세요" name="title" class="Width-80 " [maxLength]="30" [(ngModel)]="push.title" /><!--  <strong>15</strong>/30</p> -->
+                            <!-- <p class="font_14 fs_12 mt_10">* 미입력 시 앱이름이 표시됩니다.</p> -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>푸시 내용<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <textarea role="5" class="Width-80 " [maxLength]="150" [(ngModel)]="push.body"></textarea><!--  <strong>150</strong>/150 -->
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>이미지 파일</th>
+                        <td colspan="3">
+                            <widget-file-upload [attachFiles]="imgFile()"
+                                [checkType]='"push"' [maxCount]="1" [maxSize]="10485760" 
+                                (onView)="onViewAttach($event)"
+                                (onDelete)="onDeleteAttach($event)"></widget-file-upload>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>연결 화면<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <p>
+                                <input type="radio" name="moveType" value="NONE" [(ngModel)]="push.moveType" (change)="onChangeMoveType()" /> 없음
+                                <input type="radio" name="moveType" value="WU" [(ngModel)]="push.moveType" (change)="onChangeMoveType()" /> URL
+                                <input type="radio" name="moveType" value="NO" [(ngModel)]="push.moveType" (change)="onChangeMoveType()" /> 공지
+                                <input type="radio" name="moveType" value="ED" [(ngModel)]="push.moveType" (change)="onChangeMoveType()" /> 교육
+                                <input type="radio" name="moveType" value="SU" [(ngModel)]="push.moveType" (change)="onChangeMoveType()" /> 설문
+                                <button class="button03 btn_push" (click)="onMoveTargetClick()" *ngIf="push.moveType === 'NO' || push.moveType === 'ED' || push.moveType === 'SU'">연결화면</button>
+                            </p>
+                            <p>
+                                <input type="text" placeholder="URL을 입력하세요" class="Width-100 " name="moveUrl" [maxLength]="200" [(ngModel)]="push.moveUrl"
+                                    *ngIf="push.moveType === 'WU'"/>
+                                <input type="text"
+                                    placeholder="연결화면 버튼을 눌러 {{push.moveType === 'NO' ? '공지' : push.moveType === 'ED' ? '교육' : push.moveType === 'SU' ? '설문' : push.moveType}}를 선택하세요."
+                                    class="Width-100 " name="moveId" disabled
+                                    [(ngModel)]="push.moveId"
+                                    *ngIf="push.moveType === 'NO' || push.moveType === 'ED' || push.moveType === 'SU'" />
+                            </p>
+                             <!-- <p class="font_14 fs_12 mt_10">* 미입력시 푸시 선택 시 앱실행 후 HOME 화면으로 이동 됩니다.</p> -->
+                        </td>
+                    </tr>
+                </table>
+                <!-- Button -->
+                <div class="btn_wrap text_r mt_20">
+                    <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+                    <a id="save" class="button01 bg_03" *ngIf="push.pushId !== undefined" (click)="onDeleteClick()">삭제</a>
+                    <a id="save" class="button01 bg_14" (click)="onSaveClick()">저장</a>
+                </div>
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->
+
+            <widget-target-selector #targetSelector (onSelect)="onSelectMoveTarget($event)"></widget-target-selector>

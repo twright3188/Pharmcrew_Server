@@ -1,0 +1,184 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">설문조사 {{survey.surveyId === undefined ? '등록' : '수정'}}</h1>
+        <div class="f_r mt_20">Home > 고객서비스 관리 > 설문조사 관리 > <span class="fw_600">{{survey.surveyId === undefined ? '등록' : '수정'}}</span></div>
+    </div>
+
+    <div class="clear_wrap mt_10" *ngIf="survey.surveyId === undefined || modify === true">
+        <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+    </div>
+
+    <!-- Table View -->
+    <table class="tb_view01 mt_10">
+        <colgroup>
+            <col style="width:180px" />
+            <col style="width:*" />
+            <col style="width:180px" />
+            <col style="width:*" />
+        </colgroup>
+        <tr *ngIf="survey.surveyId !== undefined">
+            <th>설문상태</th>
+            <td>{{state()}}</td>
+            <th>등록자</th>
+            <td>{{survey.regName}}</td>
+        </tr>
+        <tr *ngIf="survey.surveyId !== undefined">
+            <th>설문 참여수</th>
+            <td>{{survey.joinMemberCnt | number}}명</td>
+            <th>등록일</th>
+            <td>{{survey.regDt | date: 'yyyy.MM.dd'}}</td>
+        <tr>
+            <th>설문 기간<span class="tb_star" *ngIf="survey.surveyId === undefined && modify === false">*</span></th>
+            <td colspan="3">
+                <input type="text" id="datepicker1" class="mr_5" [ngClass]="survey.surveyId !== undefined && modify === false ? 'disabled' : undefined" name="startDate"
+                    #startDate [(ngModel)]="survey.startDate"
+                    (click)="onChangeStartDate(startDate.value)"
+                    [disabled]="survey.surveyId !== undefined && modify === false"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                ~
+                <input type="text" id="datepicker2" class="mr_5" [ngClass]="survey.surveyId !== undefined && modify === false ? 'disabled' : undefined" name="endDate"
+                    #endDate [(ngModel)]="survey.endDate"
+                    (click)="onChangeEndDate(endDate.value)"
+                    [disabled]="survey.surveyId !== undefined && modify === false"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+            </td>
+        </tr>
+        <tr>
+            <th>노출 여부<span class="tb_star" *ngIf="survey.surveyId === undefined && modify === false">*</span></th>
+            <td colspan="3">
+                <input type="radio" checked name="isOpen" value="Y" [(ngModel)]="survey.isOpen" [disabled]="survey.surveyId !== undefined && modify === false" /> 노출
+                <input type="radio" class="ml_10" name="isOpen" value="N" [(ngModel)]="survey.isOpen" [disabled]="survey.surveyId !== undefined && modify === false" /> 비노출
+            </td>
+        </tr>
+        <tr>
+            <th>설문대상 선택<span class="tb_star" *ngIf="survey.surveyId === undefined && modify === false">*</span></th>
+            <td colspan="3">
+                <widget-organize-selector #organizeSelector [disabled]="survey.surveyId !== undefined && modify === false"></widget-organize-selector>
+            </td>
+        </tr>
+        <tr>
+            <th>설문 제목<span class="tb_star" *ngIf="survey.surveyId === undefined && modify === false">*</span></th>
+            <td colspan="3"><input type="text" placeholder="제목을 입력하세요" class="Width-100 " maxLength="100" [ngClass]="survey.surveyId !== undefined && modify === false ? 'disabled' : undefined"
+                name="title" [(ngModel)]="survey.title"
+                [disabled]="survey.surveyId !== undefined && modify === false" /></td>
+        </tr>
+        <tr>
+            <th>설문 상세<span class="tb_star" *ngIf="survey.surveyId === undefined && modify === false">*</span></th>
+            <td colspan="3"><input type="text" placeholder="상세 내용을 입력하세요" class="Width-100 " [maxLength]="45" [ngClass]="survey.surveyId !== undefined && modify === false ? 'disabled' : undefined"
+                name="detail" [(ngModel)]="survey.detail"
+                [disabled]="survey.surveyId !== undefined && modify === false" /></td>
+        </tr>
+    </table>
+
+
+    <div class="mt_20">
+        <h3 class="f_l ">설문 내용<span class="tb_star">*</span></h3>
+        <div class="f_r " *ngIf="survey.surveyId === undefined || modify === true"><a class="button02 bg_14" (click)="onAddQuestionClick()">질문 추가</a></div>
+    </div>
+
+    <!-- Table View -->
+    <table class="tb_view01 mt_10">
+        <colgroup>
+            <col style="width:180px" />
+            <col style="width:*" />
+        </colgroup>
+        <tr>
+            <th>결과 공개 여부<span class="tb_star" *ngIf="survey.surveyId === undefined && modify === false">*</span></th>
+            <td colspan="3">
+                <input type="radio" checked name="openResult" value="Y" [(ngModel)]="survey.openResult" [disabled]="survey.surveyId !== undefined && modify === false" /> 노출
+                <input type="radio" class="ml_10" name="openResult" value="N" [(ngModel)]="survey.openResult" [disabled]="survey.surveyId !== undefined && modify === false" /> 비노출
+            </td>
+        </tr>
+        <tr *ngFor="let question of questions.surveyQuestions">
+            <th>{{question.idx}}. 질문</th>
+            <td>
+                <p>
+                    <input type="text" placeholder="질문을 입력하세요" [ngClass]="survey.surveyId === undefined || modify === true ? 'Width-80' : 'Width-100 disabled'"
+                        name="{{question.idx}}-question" [(ngModel)]="question.question"
+                        [disabled]="survey.surveyId !== undefined && modify === false" />
+                    <a class="button02 bg_03 ml_10" (click)="onDeleteQuestionClick(question.idx)" *ngIf="question.idx !== 1 && (survey.surveyId === undefined || modify === true)">삭제</a>
+                </p>
+                <p *ngIf="survey.surveyId === undefined || modify === true">
+                    <span class="mr_20">답변형식</span>
+                    <input type="radio" checked name="{{question.idx}}-answerType" value="S" [(ngModel)]="question.answerType" (change)="onChangeAnswerType(question.idx-1)" /> 서술형
+                    <input type="radio" class="ml_10" name="{{question.idx}}-answerType" value="O" [(ngModel)]="question.answerType" (change)="onChangeAnswerType(question.idx-1)" /> 선택형
+                    <select name="{{question.idx}}-oAnswerCnt" [(ngModel)]="question.oAnswerCnt" (change)="onSelectOAnswerCnt(question.idx-1)" [disabled]="question.answerType !== 'O'">
+                        <option value="{{cnt+1}}" *ngFor="let cnt of 5 | numLoop">선택항목 {{cnt+1}}</option>
+                    </select>
+                </p>
+                <p *ngIf="survey.surveyId !== undefined && modify === false && question.answerType === 'S'">
+                    <span class="mr_20">{{question.idx}}. 답변</span> <strong>{{question.answerCnt}}답변</strong> <a id="btn_answer" class="button02 bg_03 ml_20" (click)="onOpenSAnswers(question.idx)">답변보기</a>
+                </p>
+                <p *ngFor="let answer of question.answerChoices">
+                    <ng-container *ngIf="survey.surveyId === undefined || modify === true">
+                    <span class="mr_20">{{question.idx}}. 답변 항목 {{answer.answerNo}}</span>
+                    <input type="text" placeholder="답변 항목을 입력하세요" [ngClass]="survey.surveyId === undefined || modify === true ? 'Width-70' : 'Width-50 disabled'"
+                        name="{{question.idx}}-{{answer.answerNo}}-answer" [(ngModel)]="answer.answer"
+                        [disabled]="survey.surveyId !== undefined && modify === false" />
+                    <strong class="ml_20" *ngIf="survey.surveyId !== undefined && modify === false">{{question.answerCnt === 0 ? 0 : answer.answerCnt / question.answerCnt * 100}}%</strong> 
+                    <span class="ml_20" *ngIf="survey.surveyId !== undefined && modify === false">선택 수 : {{answer.answerCnt}}</span>
+                    </ng-container>
+                    <ng-container *ngIf="survey.surveyId !== undefined && modify === false">
+                    <span class="progress_tl">{{question.idx}}. 답변 항목 {{answer.answerNo}}</span>
+                    <span class="progress_block">
+                        <span class="progress_q">{{answer.answer}}</span>
+                        <span class="progress_bar" style="width:{{question.answerCnt === 0 ? 0 : answer.answerCnt / question.answerCnt * 100}}%;"></span>
+                    </span>
+                    <span class="progress_txt"><strong class="ml_20">{{question.answerCnt === 0 ? 0 : answer.answerCnt / question.answerCnt * 100}}%</strong>  선택 수 : {{answer.answerCnt}}</span>
+                    </ng-container>
+                </p>
+            </td>
+        </tr>
+    </table>
+
+
+    <!-- Button -->
+    <div class="btn_wrap text_r mt_20">
+        <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+        <a id="save" class="button01 bg_03" *ngIf="survey.surveyId !== undefined" (click)="onDeleteClick()">삭제</a>
+        <a id="save" class="button01 bg_14" (click)="onModifyClick()" *ngIf="survey.surveyId !== undefined && modify === false && state() !== '완료'">수정</a>
+        <a id="save" class="button01 bg_14" (click)="onSaveClick()" *ngIf="survey.surveyId === undefined || modify === true">저장</a>
+    </div>
+    <!--// Button -->
+
+
+</div>
+<!-- Right Wrap -->
+
+<!-- popup -->
+<div id="answer_pop" class="popup_wrap">
+    <div class="popup_head">
+        <h2>답변보기</h2>
+        <a id="close" (click)="onCloseSAnswers()"><img src="/assets/images/ico_close.png"></a>
+    </div>
+    <div class="popup_contents">
+        
+        <!-- Table list -->
+        <table class="tb_list01 mt_30">
+            <colgroup>
+                <col style="width:80px" />
+                <col style="width:20%" />
+                <col style="width:*" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>작성자</th>
+                    <th>답변내용</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let answer of answers; index as idx">
+                    <!-- <td>{{(answerReq.page - 1) * answerReq.cntPerPage + idx+1}}</td> -->
+                    <td>{{answerCnt - (answerReq.page-1) * answerReq.cntPerPage - idx}}</td>
+                    <td>{{answer.memberName}}</td>
+                    <td>{{answer.answer}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <widget-pagination #answerPagination (onPage)="onAnswerPageClick($event)"></widget-pagination>
+        <!--// Table list -->
+    </div>
+</div>
+<div id="fade" class="black_overlay"></div>
+<!--// popup -->

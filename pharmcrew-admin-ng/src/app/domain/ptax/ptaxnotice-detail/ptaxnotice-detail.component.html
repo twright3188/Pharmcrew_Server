@@ -1,0 +1,110 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">팜텍스공지 {{notice.noticeId === undefined ? '등록' : '수정'}}</h1>
+                    <div class="f_r mt_20">Home > 팜텍스 서비스 관리 > 팜텍스공지 관리 > <span class="fw_600">{{notice.noticeId === undefined ? '등록' : '수정'}}</span></div>
+                </div>
+
+                <div class="clear_wrap mt_10">
+                    <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+                </div>
+                <!-- Table View -->
+                <table class="tb_view01 mt_10">
+                    <colgroup>
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <tr *ngIf="notice.noticeId !== undefined">
+                        <th>발송 상태</th>
+                        <td>{{notice.state === 'R' ? '예약' : notice.state === 'S' ? '전송' : notice.state === undefined ? '-' : notice.state}}</td>
+                        <th>등록일</th>
+                        <td>{{notice.regDt | date: 'yyyy.MM.dd'}}</td>
+                        <th>작성자</th>
+                        <td>{{notice.regName}}</td>
+                    </tr>
+                    <tr>
+                        <th>대상<span class="tb_star">*</span></th>
+                        <td colspan="5">
+                            <input type="radio" name="target" value="ALL" [(ngModel)]="notice.target" (change)="onChangeTarget()" /> 전체
+                            <input type="radio" class="ml_10" name="target" value="G" [(ngModel)]="notice.target" class="ml_10" (change)="onChangeTarget()" /> 팜텍스 비회원
+                            <input type="radio" class="ml_10" name="target" value="M" [(ngModel)]="notice.target" class="ml_10" (change)="onChangeTarget()" /> 팜텍스 회원
+                            <select class="ml_10" name="targetPharmName" [(ngModel)]="notice.targetPharmName" *ngIf="notice.target === 'M'" (change)="onChangePharmName()">
+                                <option value="undefined">약국 전체</option>
+                                <option value="{{pharm}}" *ngFor="let pharm of pharms">{{pharm}}</option>
+                            </select>
+                            <select class="ml_10" name="targetMemberId" [(ngModel)]="notice.targetMemberId" *ngIf="notice.target === 'M'" (change)="onChangeMemberId()">
+                                <option value="undefined">회원 전체</option>
+                                <option value="{{member.memberId}}" *ngFor="let member of members">{{member.name}}</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>노출 여부<span class="tb_star">*</span></th>
+                        <td colspan="5">
+                            <input type="radio" name="openYn" value="Y" [(ngModel)]="notice.openYn" /> 노출
+                            <input type="radio" class="ml_10" name="openYn" value="N" [(ngModel)]="notice.openYn" class="ml_10"/> 비노출
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>알림PUSH 발송 옵션<span class="tb_star">*</span></th>
+                        <td colspan="5">
+                            <input type="radio" name="sendType" value="NONE" [(ngModel)]="notice.sendType" (change)="onChangeSendType()" /> 없음
+                            <input type="radio" class="ml_10" name="sendType" value="I" [(ngModel)]="notice.sendType" (change)="onChangeSendType()" /> 즉시발송
+                            <input type="radio" class="ml_10" name="sendType" value="R" [(ngModel)]="notice.sendType" (change)="onChangeSendType()" /> 예약발송
+                            <input type="text" id="datepicker1" class="mr_5" name="reserveDate"
+                                #reserveDate [(ngModel)]="notice.reserveDate"
+                                (click)="notice.reserveDate = reserveDate.value"
+                                [disabled]="notice.sendType === 'I' || notice.sendType === 'NONE'"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                            <select class="ml_10 mr_10" name="reserveHour" [(ngModel)]="notice.reserveHour" [disabled]="notice.sendType === 'I' || notice.sendType === 'NONE'">
+                                <option value="{{hour | numPad: 2}}" *ngFor="let hour of 24 | numLoop">{{hour | numPad: 2}}시</option>
+                            </select>
+                            <select class="ml_10 mr_10" name="reserveMinute" [(ngModel)]="notice.reserveMinute" [disabled]="notice.sendType === 'I' || notice.sendType === 'NONE'">
+                                <option value="{{minute | numPad: 2}}" *ngFor="let minute of 60 | numLoop">{{minute | numPad: 2}}분</option>
+                            </select>
+                            <p class="font_14 fs_12 mt_10">* 국내 정보통신망법에 의거하여 오후9시~오전8시에는 푸시 발송이 불가능합니다.(수신자 도달 시간 기준)</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>PUSH 발송 OS<span class="tb_star">*</span></th>
+                        <td colspan="5">
+                            <input type="radio" name="os" value="ALL" [(ngModel)]="notice.os" [disabled]="notice.sendType === 'NONE'" /> 전체
+                            <input type="radio" class="ml_10" name="os" value="A" [(ngModel)]="notice.os" [disabled]="notice.sendType === 'NONE'" /> Android
+                            <input type="radio" class="ml_10" name="os" value="I" [(ngModel)]="notice.os" [disabled]="notice.sendType === 'NONE'" /> IOS
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>제목<span class="tb_star">*</span></th>
+                        <td colspan="5">
+                            <p><input type="text" placeholder="제목을 입력하세요" name="title" class="Width-80 " maxlength="30" [(ngModel)]="notice.title" /><!--  <strong>15</strong>/30</p> -->
+                            <!-- <p class="font_14 fs_12 mt_10">* 미입력 시 앱이름이 표시됩니다.</p> -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>내용<span class="tb_star">*</span></th>
+                        <td colspan="5"><div id="summernote"></div></td>
+                    </tr>
+                    <tr>
+                        <th>첨부 파일</th>
+                        <td colspan="5">
+                            <widget-file-upload [attachFiles]="notice.attachFiles"
+                                [checkType]='"ptaxnotice"' [maxCount]="3" [maxSize]="10485760" 
+                                (onView)="onViewAttach($event)"
+                                (onDelete)="onDeleteAttach($event)"></widget-file-upload>
+                        </td>
+                    </tr>
+                </table>
+                <!-- Button -->
+                <div class="btn_wrap text_r mt_20">
+                    <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+                    <a id="save" class="button01 bg_03" *ngIf="notice.noticeId !== undefined" (click)="onDeleteClick()">삭제</a>
+                    <a id="save" class="button01 bg_14" (click)="onSaveClick()">저장</a>
+                </div>
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->

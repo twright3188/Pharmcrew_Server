@@ -1,0 +1,67 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">정보수정</h1>
+                    <div class="f_r mt_20">Home > <span class="fw_600">정보수정</span></div>
+                </div>
+
+                <div class="clear_wrap mt_10">
+                    <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+                </div>
+                <!-- Table View -->
+                <table class="tb_view01 mt_10">
+                    <colgroup>
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <tr>
+                        <th>아이디<span class="tb_star">*</span></th>
+                        <td><input type="text" readonly class="Width-100" value="{{me.loginId}}" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>비밀번호<span class="tb_star">*</span></th>
+                        <td><input type="password" name="password" placeholder="비밀번호 변경시에만 입력해주세요" class="Width-100" [(ngModel)]="password" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>비밀번호 확인<span class="tb_star">*</span></th>
+                        <td><input type="password" name="repassword" placeholder="비밀번호 변경시에만 입력해주세요" class="Width-100" [(ngModel)]="repassword" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>이름<span class="tb_star">*</span></th>
+                        <td><input type="text" name="name" class="Width-100" [(ngModel)]="me.name" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>관리 조직</th>
+                        <td>
+                            <widget-organize-selector #organizeSelector [disabled]="true"></widget-organize-selector>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>이메일<span class="tb_star">*</span></th>
+                        <td><input type="text" name="email" class="Width-100" [(ngModel)]="me.email" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>내선번호</th>
+                        <td><input type="text" name="tel" class="Width-100" [(ngModel)]="me.tel" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>휴대 전화번호</th>
+                        <td><input type="text" name="phone" class="Width-100" [(ngModel)]="me.phone" />
+                        </td>
+                    </tr>
+                </table>
+                <!-- Button -->
+                <div class="btn_wrap text_r mt_20">
+                    <a id="save" class="button01 bg_14" (click)="onSaveClick()">수정</a>
+                </div>
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->

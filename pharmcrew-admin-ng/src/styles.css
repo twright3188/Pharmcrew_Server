@@ -1,0 +1,6 @@
+/* You can add global styles to this file, and also import other style files */
+.search_btn button { display: inline-block; line-height: 35px; padding:0 60px; background: #333; color:#fff; border-radius: 3px;}
+
+a {
+    cursor: pointer;
+}

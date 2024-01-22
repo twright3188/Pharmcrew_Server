@@ -1,0 +1,106 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">관리자 관리 {{admin.adminId === undefined ? '등록' : '수정'}}</h1>
+                    <div class="f_r mt_20">Home > 관리자 관리 > 관리자 관리 > <span class="fw_600">{{admin.adminId === undefined ? '등록' : '수정'}}</span></div>
+                </div>
+
+
+               <div class="clear_wrap mt_10">
+                    <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+                </div>
+                <!-- Table View -->
+                <table class="tb_view01 mt_10">
+                    <colgroup>
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <tr>
+                        <th>아이디<span class="tb_star">*</span></th>
+                        <td><input type="text" placeholder="아이디를 입력하세요." class="w_300" name="loginId" [maxLength]="10" [(ngModel)]="admin.loginId" [disabled]="admin.adminId !== undefined" (change)="onChangeLoginId()" /> <a class="button02 bg_03" (click)="onCheckLoginIdClick()" *ngIf="validLoginId === false">중복확인</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>이름<span class="tb_star">*</span></th>
+                        <td><input type="text" placeholder="이름을 입력하세요." class="w_300" name="name" [maxLength]="10" [(ngModel)]="admin.name" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>비밀번호<span class="tb_star" *ngIf="admin.adminId === undefined">*</span></th>
+                        <td><input type="password" placeholder="비밀번호를 입력하세요" class="w_300" name="password" [maxLength]="20" [(ngModel)]="password" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>비밀번호 확인<span class="tb_star" *ngIf="admin.adminId === undefined">*</span></th>
+                        <td><input type="password" placeholder="비밀번호를 다시한번 입력하세요" class="w_300" name="repassword" [maxLength]="20" [(ngModel)]="repassword" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>이메일<span class="tb_star">*</span></th>
+                        <td>
+                            <input type="text" placeholder="이메일 아이디" class="w_200" name="emailId" [maxLength]="50" [(ngModel)]="emailId" />
+                            @
+                            <input type="text" placeholder="이메일 주소" class="w_200" [maxLength]="50" [(ngModel)]="emailDomain" [disabled]="emailDomainSelector !== 'manual'" />
+                            <select id="ex_select" name="emailDomainSelector" [(ngModel)]="emailDomainSelector" (change)="onEmailDomainChange()">
+                                <option value="naver.com">naver.com</option>
+                                <option value="gmail.com">gmail.com</option>
+                                <option value="manual">직접입력</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>관리자 타입<span class="tb_star">*</span></th>
+                        <td>
+                            <select id="ex_select" name="authority" [(ngModel)]="admin.authority" (change)="onChangeAuthority()">
+                                <option value="S" [disabled]="myAuthority() !== 'S'">슈퍼관리자</option>
+                                <option value="A" [disabled]="myAuthority() !== 'S' && myAuthority() !== 'A'">약사회관리자</option>
+                                <option value="O">조직관리자</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>관리 조직<span class="tb_star">*</span></th>
+                        <td>
+                            <widget-organize-selector #organizeSelector [disabled]="admin.authority === 'S'"></widget-organize-selector>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>내선번호</th>
+                        <td><input type="text" placeholder="내선번호를 입력하세요" class="w_300" name="tel" [maxLength]="11" [(ngModel)]="admin.tel" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>휴대전화번호</th>
+                        <td><input type="text" placeholder="휴대전화번호를 입력하세요" class="w_300" name="phone" [maxLength]="11" [(ngModel)]="admin.phone" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>사용 여부<span class="tb_star">*</span></th>
+                        <td>
+                            <input type="radio" value="N" name="state" [(ngModel)]="admin.state" /> 사용
+                            <input type="radio" class="ml_10" value="S" name="state" [(ngModel)]="admin.state"/> 미사용
+                        </td>
+                    </tr>
+                    <!-- <tr>
+                        <th>메뉴접근 권한<span class="tb_star">*</span></th>
+                        <td>
+                            <input type="checkbox" /> 공통 관리 <br/>
+                            <input type="checkbox" /> 공지사항 관리 <br/>
+                            <input type="checkbox" /> 광고 관리 <br/>
+                            <input type="checkbox" /> 교육 관리 <br/>
+                            <input type="checkbox" /> 고객 서비스 관리 <br/>
+                            <input type="checkbox" /> 회원 관리
+                        </td>
+                    </tr> -->
+                </table>
+                <!-- Button -->
+                <div class="btn_wrap text_r mt_20">
+                    <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+                    <!-- <a id="save" class="button01 bg_03" *ngIf="admin.adminId !== undefined" (click)="onDeleteClick()">삭제</a> -->
+                    <a id="save" class="button01 bg_14" (click)="onSaveClick()">저장</a>
+                </div>
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->

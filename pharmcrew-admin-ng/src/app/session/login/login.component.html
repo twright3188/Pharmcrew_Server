@@ -1,0 +1,84 @@
+    <!-- 아이디 찾기 popup -->
+    <div id="find_id" class="popup_wrap">
+        <div class="popup_head">
+            <h2>아이디 찾기</h2>
+            <a id="close" (click)="onCloseFindId()"><img src="/assets/images/ico_close.png"></a>
+        </div>
+        <div class="popup_contents">
+            <p class="text_c">아래 입력란에 관리자 이름 및 이메일을 입력해주세요.</p>
+            <form #findLoginIdForm="ngForm" (ngSubmit)="onSubmitFindLoginId()">
+            <p class="find_input text_c"><span>이름</span><input type="text" name="name" [(ngModel)]="findLoginIdReq.name" placeholder="이름을 입력하세요." /></p>
+            <p class="find_input text_c"><span>이메일</span><input type="text" name="email" [(ngModel)]="findLoginIdReq.email" placeholder="이메일을 입력하세요." /></p>
+            <p class="find_result dsp_b" *ngIf="findLoginId !== undefined">찾기 결과 : {{findLoginId}}</p>
+            <p class="mt_30 text_c"><button class="button01 bg_14" type="submit" [disabled]="!findLoginIdForm.form.valid">아이디 찾기</button></p>
+            </form>
+        </div>
+    </div>
+    <div id="fade" class="black_overlay"></div>
+    <!-- <div id="fade_find_id" class="black_overlay"></div> -->
+    <!--// 아이디 찾기 popup -->
+    
+    <!-- 비밀번호 찾기 popup -->
+    <div id="find_password" class="popup_wrap">
+        <div class="popup_head">
+            <h2>비밀번호 찾기</h2>
+            <a id="close" (click)="onCloseFindPassword()"><img src="/assets/images/ico_close.png"></a>
+        </div>
+        <div class="popup_contents">
+            <p class="text_c">아래 입력란에 관리자 이름, 아이디, 이메일을 입력해주세요.</p>
+            <form #resetPasswordForm="ngForm" (ngSubmit)="onSubmitResetPassword()">
+            <p class="find_input text_c"><span>이름</span><input type="text" name="name" [(ngModel)]="resetPasswordReq.name" placeholder="이름을 입력하세요." /></p>
+            <p class="find_input text_c"><span>아이디</span><input type="text" name="loginId" [(ngModel)]="resetPasswordReq.loginId" placeholder="아이디를 입력하세요." /></p>
+            <p class="find_input text_c"><span>이메일</span><input type="text" name="email" [(ngModel)]="resetPasswordReq.email" placeholder="이메일을 입력하세요." /></p>
+            <p class="mt_30 text_c"><button class="button01 bg_14" type="submit" [disabled]="!resetPasswordForm.form.valid">비밀번호 찾기</button></p>
+            </form>
+        </div>
+    </div>
+    <div id="fade" class="black_overlay"></div>
+    <!-- <div id="fade_find_password" class="black_overlay"></div> -->
+    <!--// 비밀번호 찾기 popup -->
+
+    <div class="login_wrap">
+        <div class="login_logo"><img src="/assets/images/logo.png" alt="logo" /></div>
+        <div class="login_dialog">
+            <p class="welcome">Login</p>
+            <p class="login_text">PHARMCREW ADMINISTRATOR</p>
+            <form #loginForm="ngForm" (ngSubmit)="onSubmitLogin()">
+                <p class="mt_20"><input type="text" class="login_id" name="loginId" [(ngModel)]="loginReq.loginId" placeholder="ID를 입력하세요." /></p>
+                <p class="mt_20"><input type="password" class="login_pass" name="password" [(ngModel)]="loginReq.password" placeholder="비밀번호를 입력하세요." /></p>
+                <p class="login_btn">
+                    <!-- <a href="#none" class="button01">로그인</a> -->
+                    <button class="button01" type="submit" [disabled]="!loginForm.form.valid">로그인</button>
+                </p>
+            </form>
+            <div class="find_id">
+                <a id="id_find" (click)="onOpenFindId()">아이디 찾기</a>
+                <a id="password_find" (click)="onOpenFindPassword()">비밀번호 찾기</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        $(function() {
+             $('#close').click(function() {
+                $('.popup_wrap').css('display', 'none');
+                $('.black_overlay').css('display', 'none');
+            });
+            
+            $('#id_find').click(function() {
+                $('#find_id').css('display', 'block');
+                $('.popup_wrap').css('width', '500px').css('height', '330px').css('margin-left', '-250px').css('margin-top', '-150px');
+                $('#fade').css('display', 'block');
+            });
+            
+             $('#password_find').click(function() {
+                $('#find_password').css('display', 'block');
+                $('.popup_wrap').css('width', '500px').css('height', '330px').css('margin-left', '-250px').css('margin-top', '-150px');
+                $('#fade').css('display', 'block');
+            });
+            
+           
+        });
+
+    </script>

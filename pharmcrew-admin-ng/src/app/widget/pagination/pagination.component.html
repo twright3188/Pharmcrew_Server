@@ -1,0 +1,13 @@
+                <ul class="paging">
+                    <!-- <li class="move"><a href="#none"><i class="fa fa-angle-double-left"></i></a></li>
+                    <li class="move"><a href="#none"><i class="fa fa-angle-left"></i></a></li>
+                    <li><a href="#none">1</a></li>
+                    <li><a href="#none" class="on">2</a></li>
+                    <li><a href="#none">3</a></li>
+                    <li class="move"><a href="#none"><i class="fa fa-angle-right"></i></a></li>
+                    <li class="move"><a href="#none"><i class="fa fa-angle-double-right"></i></a></li> -->
+                    <li [ngClass]="liClass(page.name)" *ngFor="let page of pages">
+                        <a (click)="onPageClick(page.page)" *ngIf="iClass(page.name) === undefined" [ngClass]="page.name === curPage ? 'on' : ''">{{page.name}}</a>
+                        <a (click)="onPageClick(page.page)" *ngIf="iClass(page.name) !== undefined"><i [ngClass]="iClass(page.name)"></i></a>
+                    </li>
+                </ul>

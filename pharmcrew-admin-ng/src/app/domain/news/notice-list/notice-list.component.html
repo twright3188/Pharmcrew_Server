@@ -1,0 +1,111 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">공지사항</h1>
+                    <div class="f_r mt_20">Home > 공지사항 관리 > <span class="fw_600">공지사항</span></div>
+                </div>
+
+                <!-- Search -->
+                <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+                <div class="search_wrap mt_20">
+                    <div class="search_title"><i class="fa fa-search"></i> Search</div>
+                    <table class="search_tb">
+                        <colgroup>
+                            <col style="width:150px" />
+                            <col style="width:*" />
+                        </colgroup>
+                        <tbody>
+                            <tr>
+                                <th>지부/분회 선택</th>
+                                <td>
+                                    <!-- <select>
+                                        <option>지부 선택</option>
+                                    </select>
+                                    <select>
+                                        <option>분회 전체</option>
+                                    </select> -->
+                                    <widget-organize-selector #organizeSelector></widget-organize-selector>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>검색어</th>
+                                <td>
+                                    <!-- <select>
+                                        <option>전체</option>
+                                        <option>제목</option>
+                                        <option>내용</option>
+                                    </select> -->
+                                    <input type="text" name="keyword" placeholder="검색 조건을 입력 해주세요." class="Width-60" [(ngModel)]="req.keyword" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- <div class="search_btn"><a href="#none" class="bg_15">Search</a></div> -->
+                <div class="search_btn">
+                    <button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button>
+                    <!-- <a [routerLink]="['/notices', -1]" class="f_r bg_14">등록</a> -->
+                    <a (click)="onClickItem(-1)" class="f_r bg_14">등록</a>
+                </div>
+                </form>
+                <!-- Search -->
+
+                <!-- Table list -->
+                <table class="tb_list01 mt_30">
+                    <colgroup>
+                        <col style="width:80px" />
+                        <col style="width:10%" />
+                        <col style="width:*" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>약사회 구분</th>
+                            <th>제목</th>
+                            <th>등록자</th>
+                            <th>노출여부</th>
+                            <th>조회수</th>
+                            <th>등록일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="notices === undefined">
+                            <td colspan="7">검색결과가 없습니다.</td>
+                        </tr>
+                        <tr *ngFor="let notice of notices; index as idx">
+                            <td>{{notice.noticeId}}</td>
+                            <td>{{notice.organize === undefined ? '전체' : notice.organize.names.toString().split(',').join(' > ')}}</td>
+                            <!-- <td class="text_l"><a class="line" [routerLink]="['/notices', notice.noticeId]">{{notice.title}}</a></td> -->
+                            <td class="text_l"><a class="line" (click)="onClickItem(notice.noticeId)">{{notice.title}}</a></td>
+                            <td>{{notice.regName}}</td>
+                            <td>{{notice.isOpen === 'Y' ? '노출' : '비노출'}}</td>
+                            <td>{{notice.viewCnt}}</td>
+                            <td>{{notice.regDt | date: 'yyyy.MM.dd'}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- <ul class="paging">
+                    <li class="move"><a href="#none"><i class="fa fa-angle-double-left"></i></a></li>
+                    <li class="move"><a href="#none"><i class="fa fa-angle-left"></i></a></li>
+                    <li><a href="#none">1</a></li>
+                    <li><a href="#none" class="on">2</a></li>
+                    <li><a href="#none">3</a></li>
+                    <li class="move"><a href="#none"><i class="fa fa-angle-right"></i></a></li>
+                    <li class="move"><a href="#none"><i class="fa fa-angle-double-right"></i></a></li>
+                </ul> -->
+                <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+                <!--// Table list -->
+
+                <!-- Button -->
+                <!-- <div class="btn_wrap text_r mt_20">
+                    <a [routerLink]="['/notices', -1]" class="button01 bg_14">등록</a>
+                </div> -->
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.admin">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<!-- =============================================================================== -->
+	<!-- 관리자 -->
+	<!-- =============================================================================== -->
+
+	<sql id="admin-where">
+		<where>
+			<if test="admin_id != null">
+		AND		ORIGIN.admin_id = #{admin_id}
+			</if>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<if test="authority != null">
+		AND		ORIGIN.authority = #{authority}
+			</if>
+			<if test="account != null">
+		AND		ORIGIN.account = #{account}
+			</if>
+			<if test="password != null">
+		AND		ORIGIN.password = #{password}
+			</if>
+			<if test="name != null">
+		AND		ORIGIN.name = #{name}
+			</if>
+			<if test="email != null">
+		AND		ORIGIN.email = #{email}
+			</if>
+			<if test="phone != null">
+		AND		ORIGIN.phone = #{phone}
+			</if>
+			<if test="tel != null">
+		AND		ORIGIN.tel = #{tel}
+			</if>
+			<if test="state_div != null">
+		AND		ORIGIN.state_div = #{state_div}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="keyword != null">
+		and		(ORIGIN.account like concat('%', #{keyword}, '%') or
+				ORIGIN.name like concat('%', #{keyword}, '%'))
+			</if>
+			<if test="pathDownOrganizeId != null">
+		and		find_in_set(ORIGIN.organize_id,	(
+					select	group_concat(organize_id)
+					from	t_organize
+					where	organize_d1_id = #{pathDownOrganizeId}
+					or		organize_d2_id = #{pathDownOrganizeId}
+					or		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+			</if>
+		</where>
+	</sql>
+
+	<insert id="admin-insert" parameterType="AdminVo" useGeneratedKeys="true">
+		INSERT	INTO	t_admin
+				(authority, account, password, name, email, reg_id
+		<if test="organize_id != null">
+				, organize_id
+		</if>
+		<if test="phone != null">
+				, phone
+		</if>
+		<if test="tel != null">
+				, tel
+		</if>
+		<if test="state_div != null">
+				, state_div
+		</if>
+				, reg_dt)
+		VALUES (#{authority}, #{account}, #{password}, #{name}, #{email}, #{reg_id}
+		<if test="organize_id != null">
+				, #{organize_id}
+		</if>
+		<if test="phone != null">
+				, #{phone}
+		</if>
+		<if test="tel != null">
+				, #{tel}
+		</if>
+		<if test="state_div != null">
+				, #{state_div}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="admin_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="admin-select" parameterType="Map" resultType="AdminVo">
+		SELECT	ORIGIN.*
+		FROM	t_admin	ORIGIN
+
+		<include refid="admin-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="admin-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.admin_id)
+		FROM	t_admin	ORIGIN
+		<include refid="admin-where"/>
+	</select>
+
+	<update id="admin-update" parameterType="AdminVo">
+		UPDATE	t_admin
+		SET
+				mod_dt = now()
+			<if test="organize_id != null">
+			,	organize_id = #{organize_id}
+			</if>
+			<if test="authority != null">
+			,	authority = #{authority}
+			</if>
+			<if test="account != null">
+			,	account = #{account}
+			</if>
+			<if test="password != null">
+			,	password = #{password}
+			</if>
+			<if test="name != null">
+			,	name = #{name}
+			</if>
+			<if test="email != null">
+			,	email = #{email}
+			</if>
+			<if test="phone != null">
+			,	phone = #{phone}
+			</if>
+			<if test="tel != null">
+			,	tel = #{tel}
+			</if>
+			<if test="state_div != null">
+			,	state_div = #{state_div}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+			,	mod_id = #{mod_id}
+			</if>
+			<if test="telNull != null and telNull == true">
+			,	tel = null
+			</if>
+			<if test="phoneNull != null and phoneNull == true">
+			,	phone = null
+			</if>
+		WHERE
+				admin_id = #{admin_id}
+	</update>
+
+	<delete id="admin-delete" parameterType="AdminVo">
+		DELETE
+		FROM	t_admin
+		WHERE	admin_id = #{admin_id}
+	</delete>
+
+</mapper>
+

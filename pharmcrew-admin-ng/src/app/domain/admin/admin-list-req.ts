@@ -1,0 +1,5 @@
+export class AdminListReq {
+    keyword: string;
+    page = 1;
+    cntPerPage = 20;
+}

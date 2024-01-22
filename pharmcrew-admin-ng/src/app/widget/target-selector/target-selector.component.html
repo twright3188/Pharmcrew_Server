@@ -1,0 +1,49 @@
+<div id="fade" class="black_overlay"></div>
+<!-- 푸시 연결화면 선택 popup -->
+<div id="push_select" class="popup_wrap">
+    <div class="popup_head">
+        <h2>연결화면 선택 ({{moveType === 'NO' ? '공지' : moveType === 'ED' ? '교육' : moveType === 'SU' ? '설문' : moveType}})</h2>
+        <a id="close" (click)="onClosePopupClick()"><img src="/assets/images/ico_close.png"></a>
+    </div>
+    <div class="popup_contents">
+        <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+        <p class="text_c">
+            <!-- <select>
+                <option>메뉴를 선택하세요</option>
+            </select> -->
+            <input type="text" placeholder="제목검색" class="Width-50" name="keyword" [(ngModel)]="keyword" />
+            <button class="button02 bg_04 ml_10" type="submit" [disabled]="!searchForm.form.valid">검색</button>
+        </p>
+        </form>
+        <!-- Table list -->
+        <table class="tb_list01 mt_30">
+            <colgroup>
+                <col style="width:80px" />
+                <!-- <col style="width:80px" /> -->
+                <col style="width:*" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>선택</th>
+                    <!-- <th>메뉴</th> -->
+                    <th>제목</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let target of targets">
+                    <td><input type="radio" name="moveId" value="{{target.id}}" [(ngModel)]="moveId"/></td>
+                    <!-- <td>교육</td> -->
+                    <td>{{target.title}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+        <!--// Table list -->
+        <!-- Button -->
+        <div class="btn_wrap text_c mt_20">
+            <button id="save" class="button01 bg_15" (click)="onSelectTargetClick()">화면 선택</button>
+        </div>
+        <!--// Button -->
+    </div>
+</div>
+<!-- 시 연결화면 선택  -->

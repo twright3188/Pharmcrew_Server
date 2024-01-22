@@ -1,0 +1,85 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">관리자 관리</h1>
+                    <div class="f_r mt_20">Home > 관리자 관리 > <span class="fw_600">관리자 관리</span></div>
+                </div>
+
+                <!-- Search -->
+                <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+                <div class="search_wrap mt_20">
+                    <div class="search_title"><i class="fa fa-search"></i> Search</div>
+                    <table class="search_tb">
+                        <colgroup>
+                            <col style="width:150px" />
+                            <col style="width:*" />
+                        </colgroup>
+                        <tr>
+                            <th>검색조건</th>
+                            <td>
+                                <input type="text" name="keywrod" placeholder="아이디 또는 이름을 검색해주세요." class="Width-100" [(ngModel)]="req.keyword" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="search_btn">
+                    <button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button>
+                    <!-- <a [routerLink]="['/admins', -1]" class="f_r bg_14">등록</a> -->
+                    <a (click)="onClickDetail(-1)" class="f_r bg_14">등록</a>
+                </div>
+                </form>
+                <!-- Search -->
+
+                <!-- Table list -->
+                <table class="tb_list01 mt_30">
+                    <colgroup>
+                        <col style="width:80px" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>관리자 타입(권한)</th>
+                            <th>관리조직</th>
+                            <th>관리자 ID</th>
+                            <th>관리자 이름</th>
+                            <th>이메일</th>
+                            <th>등록일</th>
+                            <th>사용여부</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="admins === undefined">
+                            <td colspan="8">등록(검색)된 관리자가 없습니다.</td>
+                        </tr>
+                        <tr *ngFor="let admin of admins; index as idx">
+                            <td>{{admin.adminId}}</td>
+                            <td>{{admin.authority === 'S' ? '슈퍼관리자' : admin.authority === 'A' ? '약사회관리자' : admin.authority === 'O' ? '조직관리자' : admin.authority}}</td>
+                            <td>{{admin.organize === undefined ? '전체' : admin.organize.names.toString().split(',').join(' > ')}}</td>
+                            <!-- <td><a class="line" [routerLink]="['/admins', admin.adminId]">{{admin.loginId}}</a></td> -->
+                            <td><a class="line" (click)="onClickDetail(admin.adminId)">{{admin.loginId}}</a></td>
+                            <td>{{admin.name}}</td>
+                            <td>{{admin.email}}</td>
+                            <td>{{admin.regDt | date: 'yyyy.MM.dd'}}</td>
+                            <td>{{admin.state === 'N' ? '사용' : admin.state === 'S' ? '미사용' : admin.state}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+                <!--// Table list -->
+
+                <!-- Button -->
+                <!-- <div class="btn_wrap text_r mt_20">
+                    <a [routerLink]="['/admins', -1]" class="button01 bg_14">등록</a>
+                </div> -->
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->

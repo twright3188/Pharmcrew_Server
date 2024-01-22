@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.academy">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<select id="file-select-by-id" resultType="FileVo">
+		select	* from t_file where file_id = #{file_id}
+	</select>
+
+	<select id="admin-select-by-id" resultType="AdminVo">
+		select	* from t_admin where admin_id = #{admin_id}
+	</select>
+	
+	<!-- =============================================================================== -->
+	<!-- 문서 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="doc-result-map" type="DocVo">
+		<id property="doc_id" column="doc_id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+		<association property="docFile" column="doc_file_id" javaType="FileVo" select="file-select-by-id" />
+	</resultMap>
+	
+	<sql id="doc-where">
+		<where>
+			<if test="doc_id != null">
+		AND		ORIGIN.doc_id = #{doc_id}
+			</if>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="body != null">
+		AND		ORIGIN.body = #{body}
+			</if>
+			<if test="doc_file_id != null">
+		AND		ORIGIN.doc_file_id = #{doc_file_id}
+			</if>
+			<if test="open_yn != null">
+		AND		ORIGIN.open_yn = #{open_yn}
+			</if>
+			<if test="view_cnt != null">
+		AND		ORIGIN.view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="organize_member_id != null">		<!-- 사용자의 조직에 따라 조회하기 -->
+		AND	 (	find_in_set(ORIGIN.organize_id, 
+							(SELECT
+							    (CASE
+									WHEN depth = '1'
+										THEN concat(organize_d1_id)
+									WHEN depth = '2'
+										THEN concat(organize_d1_id, ',', organize_d2_id)
+									WHEN depth = '3'
+										THEN concat(organize_d1_id, ',', organize_d2_id, ',', organize_d3_id)
+									ELSE null
+									END) AS organize_ids	
+								FROM t_organize
+								where organize_id = (SELECT organize_1_id FROM t_member WHERE member_id = #{organize_member_id})
+								)
+							)
+					OR ORIGIN.organize_id is null <!-- TODO:beksung 나중에 조직이 항상 있을 경우에는 삭제해야 함 -->
+				)
+			</if>
+			<if test="keyword != null">	<!-- 검색 시 타이틀, 내용에서 검색한다. -->
+		and		(ORIGIN.title like concat('%', #{keyword}, '%') or
+				 ORIGIN.body like concat('%', #{keyword}, '%'))
+			</if>
+			<if test="pathDownOrganizeId != null">
+		and		find_in_set(ORIGIN.organize_id,	(
+												select	group_concat(organize_id)
+												from	t_organize
+												where	organize_d1_id = #{pathDownOrganizeId}
+												or		organize_d2_id = #{pathDownOrganizeId}
+												or		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+			</if>
+		</where>
+	</sql>
+
+	<insert id="doc-insert" parameterType="DocVo" useGeneratedKeys="true">
+		INSERT	INTO	t_doc
+				(title, body, doc_file_id, reg_id
+		<if test="organize_id != null">
+				, organize_id
+		</if>
+		<if test="open_yn != null">
+				, open_yn
+		</if>
+		<if test="view_cnt != null">
+				, view_cnt
+		</if>
+				, reg_dt)
+		VALUES (#{title}, #{body}, #{doc_file_id}, #{reg_id}
+		<if test="organize_id != null">
+				, #{organize_id}
+		</if>
+		<if test="open_yn != null">
+				, #{open_yn}
+		</if>
+		<if test="view_cnt != null">
+				, #{view_cnt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="doc_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="doc-select" parameterType="Map" resultMap="doc-result-map">
+		SELECT	ORIGIN.*
+		FROM	t_doc	ORIGIN
+
+		<include refid="doc-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="doc-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.doc_id)
+		FROM	t_doc	ORIGIN
+		<include refid="doc-where"/>
+	</select>
+
+	<update id="doc-update" parameterType="DocVo">
+		UPDATE	t_doc
+		SET
+				doc_id = #{doc_id}
+			<if test="organize_id != null">
+			,	organize_id = #{organize_id}
+			</if>
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="body != null">
+			,	body = #{body}
+			</if>
+			<if test="open_yn != null">
+			,	open_yn = #{open_yn}
+			</if>
+			<if test="view_cnt != null">
+			,	view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+			,	mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+			,	mod_dt = #{mod_dt}
+			</if>
+				,	mod_dt = now()
+		WHERE
+				doc_id = #{doc_id}
+	</update>
+
+	<delete id="doc-delete" parameterType="DocVo">
+		DELETE
+		FROM	t_doc
+		WHERE	doc_id = #{doc_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 동영상 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="video-result-map" type="VideoVo">
+		<id property="video_id" column="video_id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+		<association property="thumbFile" column="thumb_file_id" javaType="FileVo" select="file-select-by-id" />
+	</resultMap>
+	
+	<sql id="video-where">
+		<where>
+			<if test="video_id != null">
+		AND		ORIGIN.video_id = #{video_id}
+			</if>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="url != null">
+		AND		ORIGIN.url = #{url}
+			</if>
+			<if test="thumb_file_id != null">
+		AND		ORIGIN.thumb_file_id = #{thumb_file_id}
+			</if>
+			<if test="open_yn != null">
+		AND		ORIGIN.open_yn = #{open_yn}
+			</if>
+			<if test="view_cnt != null">
+		AND		ORIGIN.view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="organize_member_id != null">		<!-- 사용자의 조직에 따라 조회하기 -->
+		AND	 (	find_in_set(ORIGIN.organize_id, 
+							(SELECT
+							    (CASE
+									WHEN depth = '1'
+										THEN concat(organize_d1_id)
+									WHEN depth = '2'
+										THEN concat(organize_d1_id, ',', organize_d2_id)
+									WHEN depth = '3'
+										THEN concat(organize_d1_id, ',', organize_d2_id, ',', organize_d3_id)
+									ELSE null
+									END) AS organize_ids	
+								FROM t_organize
+								where organize_id = (SELECT organize_1_id FROM t_member WHERE member_id = #{organize_member_id})
+								)
+							)
+					OR ORIGIN.organize_id is null <!-- TODO:beksung 나중에 조직이 항상 있을 경우에는 삭제해야 함 -->
+				)
+			</if>
+			<if test="keyword != null">	<!-- 검색 시 타이틀 검색한다. -->
+		and		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+			<if test="pathDownOrganizeId != null">
+		and		find_in_set(ORIGIN.organize_id,	(
+												select	group_concat(organize_id)
+												from	t_organize
+												where	organize_d1_id = #{pathDownOrganizeId}
+												or		organize_d2_id = #{pathDownOrganizeId}
+												or		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+			</if>
+		</where>
+	</sql>
+
+	<insert id="video-insert" parameterType="VideoVo" useGeneratedKeys="true">
+		INSERT	INTO	t_video
+				(title, url, thumb_file_id, open_yn, reg_id
+		<if test="organize_id != null">
+				, organize_id
+		</if>
+		<if test="view_cnt != null">
+				, view_cnt
+		</if>
+				, reg_dt)
+		VALUES (#{title}, #{url}, #{thumb_file_id}, #{open_yn}, #{reg_id}
+		<if test="organize_id != null">
+				, #{organize_id}
+		</if>
+		<if test="view_cnt != null">
+				, #{view_cnt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="video_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="video-select" parameterType="Map" resultMap="video-result-map">
+		SELECT	ORIGIN.*
+		FROM	t_video	ORIGIN
+
+		<include refid="video-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="video-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.video_id)
+		FROM	t_video	ORIGIN
+		<include refid="video-where"/>
+	</select>
+
+	<update id="video-update" parameterType="VideoVo">
+		UPDATE	t_video
+		SET
+				video_id = #{video_id}
+			<if test="organize_id != null">
+			,	organize_id = #{organize_id}
+			</if>
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="url != null">
+			,	url = #{url}
+			</if>
+			<if test="open_yn != null">
+			,	open_yn = #{open_yn}
+			</if>
+			<if test="view_cnt != null">
+			,	view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+			,	mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+			,	mod_dt = #{mod_dt}
+			</if>
+				,	mod_dt = now()
+		WHERE
+				video_id = #{video_id}
+	</update>
+
+	<delete id="video-delete" parameterType="VideoVo">
+		DELETE
+		FROM	t_video
+		WHERE	video_id = #{video_id}
+	</delete>
+
+</mapper>
+

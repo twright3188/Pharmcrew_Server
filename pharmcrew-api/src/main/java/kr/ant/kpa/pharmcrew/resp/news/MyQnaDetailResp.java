@@ -1,0 +1,51 @@
+package kr.ant.kpa.pharmcrew.resp.news;
+
+import com.bumdori.spring.annotation.Description;
+
+import kr.ant.kpa.pharmcrew.resp.PcResp;
+import kr.ant.kpa.pharmcrew.validation.VALIDATION;
+
+import kr.ant.kpa.pharmcrew.resp.news.QnaDetail;
+
+/**
+* 소식방
+* 5.나의 문의 상세
+ */
+public class MyQnaDetailResp extends PcResp {
+
+	/**
+	*
+	*/
+	private static final long serialVersionUID = -1;
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	 Member Variable
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	@Description("문의 답변 상세")
+	private QnaDetail detail;
+
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	 Base Functions 
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	public MyQnaDetailResp() {
+		super();
+	}
+	public MyQnaDetailResp(VALIDATION validation) {
+		super(validation);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	  Member Functions	
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	public QnaDetail getDetail() {
+		return detail;
+ 	}
+	public void setDetail(QnaDetail detail) {
+		this.detail = detail;
+ 	}
+
+}

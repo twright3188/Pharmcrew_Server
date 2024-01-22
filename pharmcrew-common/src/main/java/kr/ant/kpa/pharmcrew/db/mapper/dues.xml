@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.dues">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<!-- =============================================================================== -->
+	<!-- 회비표 -->
+	<!-- =============================================================================== -->
+
+	<sql id="duestable-where">
+		<where>
+			<if test="dt_year != null">
+		AND		dt_year = #{dt_year}
+			</if>
+			<if test="dc_code != null">
+		AND		dc_code = #{dc_code}
+			</if>
+			<if test="di_order != null">
+		AND		di_order = #{di_order}
+			</if>
+			<if test="ac_code != null">
+		AND		ac_code = #{ac_code}
+			</if>
+			<if test="dt_dues != null">
+		AND		dt_dues = #{dt_dues}
+			</if>
+		</where>
+	</sql>
+
+ 	<select id="duestable-select" parameterType="Map" resultType="DuesTableVo">
+		select * from kpapassdev.dues_table		
+ 		<include refid="duestable-where"/> 
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+		<include refid="paging"/>
+	</select>
+
+ 	<update id="duestable-update" parameterType="DuesTableVo">
+		UPDATE	kpapassdev.dues_table 
+		SET 
+			dt_dues = #{dt_dues}
+		WHERE
+					dt_year = #{dt_year} 
+				AND dc_code = #{dc_code}
+				AND di_order = #{di_order}
+				AND ac_code = #{ac_code}
+	</update>
+
+	<!-- =============================================================================== -->
+	<!-- dues_item -->
+	<!-- =============================================================================== -->
+
+	<sql id="duesitem-where">
+		<where>
+			<if test="di_order != null">
+		AND		di_order = #{di_order}
+			</if>
+			<if test="ac_code != null">
+		AND		ac_code = #{ac_code}
+			</if>
+			<if test="di_name != null">
+		AND		di_name = #{di_name}
+			</if>
+			<if test="di_priority != null">
+		AND		di_priority = #{di_priority}
+			</if>
+			<if test="di_enabled != null">
+		AND		di_enabled = #{di_enabled}
+			</if>
+		</where>
+	</sql>
+
+ 	<select id="duesitem-select" parameterType="Map" resultType="DuesItemVo">
+		select * from kpapassdev.dues_item		
+ 		<include refid="duesitem-where"/> 
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+		<include refid="paging"/>
+	</select>
+
+ 	<update id="duesitem-update" parameterType="DuesItemVo">
+		UPDATE	kpapassdev.dues_item 
+		SET
+			di_name = #{di_name}
+			<if test="di_priority != null">
+			,	di_priority = #{di_priority}
+			</if>
+			<if test="di_enabled != null">
+			,	di_enabled = #{di_enabled}
+			</if>
+		WHERE
+				di_order = #{di_order} AND ac_code = #{ac_code}
+	</update>
+	
+ 	<select id="duestable-value" parameterType="Map" resultType="DuesTableValueVo">
+		select di_name, dt_dues, dt_year, di.ac_code AS ac_code 
+		from kpapassdev.dues_table dt, kpapassdev.dues_item di
+		<where>
+		AND	di.di_order = dt.di_order 
+		AND di.ac_code = dt.ac_code 
+			<if test="ac_code != null">
+		AND	dt.ac_code in ('0000', #{ac_code_up}, #{ac_code})
+			</if>
+			<if test="dc_code != null">
+		AND		dt.dc_code = #{dc_code}
+			</if>
+			<if test="dt_year != null">
+		AND		dt.dt_year = #{dt_year}
+			</if>
+		</where>
+		
+		ORDER	BY di_priority
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- dues_item -->
+	<!-- =============================================================================== -->
+
+	<sql id="bi-where">
+		<where>
+			<if test="ac_code != null">
+		AND		ac_code = #{ac_code}
+			</if>
+			<if test="bi_name != null">
+		AND		bi_name = #{bi_name}
+			</if>
+			<if test="bi_owner != null">
+		AND		bi_owner = #{bi_owner}
+			</if>
+			<if test="bi_account != null">
+		AND		bi_account = #{bi_account}
+			</if>
+			<if test="bi_disclosure != null">
+		AND		bi_disclosure = #{bi_disclosure}
+			</if>
+		</where>
+	</sql>
+
+ 	<select id="bi-select" parameterType="Map" resultType="BankInformationVo">
+		select * from kpapassdev.bank_informaton
+ 		<include refid="bi-where"/> 
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+		<include refid="paging"/>
+	</select>
+	
+</mapper>
+

@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.news">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<select id="file-select-by-notice-id" resultType="FileVo">
+		select	ORIGIN.*
+		from	t_file ORIGIN
+		join	t_notice_file NF on NF.file_id = ORIGIN.file_id
+		where	NF.notice_id = #{notice_id}
+	</select>
+
+	<select id="file-select-by-id" resultType="FileVo">
+		select	* from t_file where file_id = #{file_id}
+	</select>
+
+	<select id="admin-select-by-id" resultType="AdminVo">
+		select	* from t_admin where admin_id = #{admin_id}
+	</select>
+
+	<select id="member-select-by-id" resultType="MemberVo">
+		select	* from t_member where member_id = #{member_id}
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- 공지 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="notice-result-map" type="NoticeVo">
+		<id property="notice_id" column="notice_id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+		<collection property="attachFiles" column="notice_id" javaType="ArrayList" ofType="FileVo" select="file-select-by-notice-id" />
+	</resultMap>
+
+	<sql id="notice-where">
+		<where>
+			<if test="notice_id != null">
+		AND		ORIGIN.notice_id = #{notice_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="body != null">
+		AND		ORIGIN.body = #{body}
+			</if>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<if test="is_open != null">
+		AND		ORIGIN.is_open = #{is_open}
+			</if>
+			<if test="is_push != null">
+		AND		ORIGIN.is_push = #{is_push}
+			</if>
+			<if test="view_cnt != null">
+		AND		ORIGIN.view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="pathDownOrganizeId != null">
+		<!--and		find_in_set(ORIGIN.organize_id, fn_organize_ids_hierarchy_down(#{pathDownOrganizeId}))-->
+		and		find_in_set(ORIGIN.organize_id,	(
+												select	group_concat(organize_id)
+												from	t_organize
+		 										where	organize_d1_id = #{pathDownOrganizeId}
+												or		organize_d2_id = #{pathDownOrganizeId}
+												or		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+			</if>
+			<if test="keyword != null">
+		and		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+			<if test="organize_member_id != null">		<!-- 사용자의 조직에 따라 조회하기 -->
+		AND	 (	find_in_set(ORIGIN.organize_id, 
+							(SELECT
+							    (CASE
+									WHEN depth = '1'
+										THEN concat(organize_d1_id)
+									WHEN depth = '2'
+										THEN concat(organize_d1_id, ',', organize_d2_id)
+									WHEN depth = '3'
+										THEN concat(organize_d1_id, ',', organize_d2_id, ',', organize_d3_id)
+									ELSE null
+									END) AS organize_ids	
+								FROM t_organize
+								where organize_id = (SELECT organize_1_id FROM t_member WHERE member_id = #{organize_member_id})
+								)
+							)
+					OR ORIGIN.organize_id is null <!-- TODO:beksung 나중에 조직이 항상 있을 경우에는 삭제해야 함 -->
+				)
+			</if>
+		</where>
+	</sql>
+
+	<insert id="notice-insert" parameterType="NoticeVo" useGeneratedKeys="true">
+		INSERT	INTO	t_notice
+				(title, body, reg_id
+		<if test="organize_id != null">
+				, organize_id
+		</if>
+		<if test="is_open != null">
+				, is_open
+		</if>
+		<if test="is_push != null">
+				, is_push
+		</if>
+		<if test="view_cnt != null">
+				, view_cnt
+		</if>
+				, reg_dt)
+		VALUES (#{title}, #{body}, #{reg_id}
+		<if test="organize_id != null">
+				, #{organize_id}
+		</if>
+		<if test="is_open != null">
+				, #{is_open}
+		</if>
+		<if test="is_push != null">
+				, #{is_push}
+		</if>
+		<if test="view_cnt != null">
+				, #{view_cnt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="notice_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="notice-select" parameterType="Map" resultMap="notice-result-map">
+		SELECT	ORIGIN.*
+			,	(SELECT name FROM t_organize WHERE organize_id = ORIGIN.organize_id) as organizeName	<!-- 조직 이름 추출 : beksung -->
+		<!--<if test="withOrganizePath != null and withOrganizePath == true">
+			,	fn_organize_ids_hierarchy_up(ORIGIN.organize_id) as organizePath
+		</if>-->
+		FROM	t_notice	ORIGIN
+
+		<include refid="notice-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="notice-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.notice_id)
+		FROM	t_notice	ORIGIN
+		<include refid="notice-where"/>
+	</select>
+
+	<update id="notice-update" parameterType="NoticeVo">
+		UPDATE	t_notice
+		SET
+				mod_dt = now()
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="body != null">
+			,	body = #{body}
+			</if>
+			<if test="organize_id != null">
+			,	organize_id = #{organize_id}
+			</if>
+			<if test="is_open != null">
+			,	is_open = #{is_open}
+			</if>
+			<if test="is_push != null">
+			,	is_push = #{is_push}
+			</if>
+			<if test="view_cnt != null">
+			,	view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				notice_id = #{notice_id}
+	</update>
+
+	<delete id="notice-delete" parameterType="NoticeVo">
+		DELETE
+		FROM	t_notice
+		WHERE	notice_id = #{notice_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 공지 첨부 파일 -->
+	<!-- =============================================================================== -->
+
+	<sql id="noticefile-where">
+		<where>
+			<if test="notice_id != null">
+		AND		ORIGIN.notice_id = #{notice_id}
+			</if>
+			<if test="file_id != null">
+		AND		ORIGIN.file_id = #{file_id}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="noticefile-insert" parameterType="NoticeFileVo">
+		INSERT	INTO	t_notice_file
+				(notice_id, file_id
+				)
+		VALUES (#{notice_id}, #{file_id}
+				)
+	</insert>
+
+	<select id="noticefile-select" parameterType="Map" resultType="NoticeFileVo">
+		SELECT	ORIGIN.*
+		<if test="with_file_info != null and with_file_info == true">
+			,	file.name as attach_name
+			,	file.org_name as attach_org_name
+		</if>
+		FROM	t_notice_file	ORIGIN
+		JOIN 	t_file 	file ON file.file_id = ORIGIN.file_id
+
+		<include refid="noticefile-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="noticefile-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.notice_id)
+		FROM	t_notice_file	ORIGIN
+		<include refid="noticefile-where"/>
+	</select>
+
+	<update id="noticefile-update" parameterType="NoticeFileVo">
+		UPDATE	t_notice_file
+		SET
+				notice_id = #{notice_id}
+			,	file_id = #{file_id}
+		WHERE
+				notice_id = #{notice_id}
+				AND file_id = #{file_id}
+	</update>
+
+	<delete id="noticefile-delete" parameterType="NoticeFileVo">
+		DELETE
+		FROM	t_notice_file
+		WHERE	notice_id = #{notice_id}	AND file_id = #{file_id}
+	</delete>
+
+	<insert id="noticefile-insert-list" parameterType="Map">
+		insert	into t_notice_file
+				(notice_id, file_id)
+		values
+		<foreach item="fileId" collection="fileIds" separator=",">
+				(#{notice_id}, #{fileId})
+		</foreach>
+	</insert>
+
+	<delete id="noticefile-delete-map" parameterType="Map">
+		delete
+		from	t_notice_file
+		where
+		<if test="notice_id != null">
+				notice_id = #{notice_id}
+		</if>
+		<if test="fileIds != null">
+				file_id in (
+			<foreach item="fileId" collection="fileIds" separator=",">
+					#{fileId}
+			</foreach>
+				)
+		</if>
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 팝업 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="popup-result-map" type="PopupVo">
+		<id property="popup_id" column="popup_id" />
+		<association property="imgFile" column="img_file_id" javaType="FileVo" select="file-select-by-id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+	</resultMap>
+
+	<sql id="popup-where">
+		<where>
+			<if test="popup_id != null">
+		AND		ORIGIN.popup_id = #{popup_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="img_file_id != null">
+		AND		ORIGIN.img_file_id = #{img_file_id}
+			</if>
+			<if test="move_div != null">
+		AND		ORIGIN.move_div = #{move_div}
+			</if>
+			<if test="move_id != null">
+		AND		ORIGIN.move_id = #{move_id}
+			</if>
+			<if test="move_url != null">
+		AND		ORIGIN.move_url = #{move_url}
+			</if>
+			<if test="is_open != null">
+		AND		ORIGIN.is_open = #{is_open}
+			</if>
+			<if test="open_start_dt != null">
+		AND		ORIGIN.open_start_dt = #{open_start_dt}
+			</if>
+			<if test="open_end_dt != null">
+		AND		ORIGIN.open_end_dt = #{open_end_dt}
+			</if>
+			<if test="open_idx != null">
+		AND		ORIGIN.open_idx = #{open_idx}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="keyword != null">
+		and		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+			<if test="IsProgress != null and IsProgress == true">		<!-- 진행 중 조회 : 현재일자가 시작/종료 사이에 있는 경우 -->
+		AND		date_format(now(), '%Y-%m-%d')  BETWEEN date_format( ORIGIN.open_start_dt, '%Y-%m-%d') AND date_format(ORIGIN.open_end_dt, '%Y-%m-%d')
+			</if>
+		</where>
+	</sql>
+
+	<insert id="popup-insert" parameterType="PopupVo" useGeneratedKeys="true">
+		INSERT	INTO	t_popup
+				(title, img_file_id, move_div, open_idx, reg_id
+		<if test="move_id != null">
+				, move_id
+		</if>
+		<if test="move_url != null">
+				, move_url
+		</if>
+		<if test="is_open != null">
+				, is_open
+		</if>
+				, open_start_dt, open_end_dt, reg_dt)
+		VALUES (#{title}, #{img_file_id}, #{move_div}, #{open_idx}, #{reg_id}
+		<if test="move_id != null">
+				, #{move_id}
+		</if>
+		<if test="move_url != null">
+				, #{move_url}
+		</if>
+		<if test="is_open != null">
+				, #{is_open}
+		</if>
+				, #{open_start_dt}, #{open_end_dt}, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="popup_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="popup-select" parameterType="Map" resultMap="popup-result-map">
+		SELECT	ORIGIN.*
+		FROM	t_popup	ORIGIN
+
+		<include refid="popup-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="popup-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.popup_id)
+		FROM	t_popup	ORIGIN
+		<include refid="popup-where"/>
+	</select>
+
+	<update id="popup-update" parameterType="PopupVo">
+		UPDATE	t_popup
+		SET
+				mod_dt = now()
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="move_div != null">
+			,	move_div = #{move_div}
+			</if>
+			<if test="move_id != null">
+			,	move_id = #{move_id}
+			</if>
+			<if test="move_url != null">
+			,	move_url = #{move_url}
+			</if>
+			<if test="is_open != null">
+			,	is_open = #{is_open}
+			</if>
+			<if test="open_start_dt != null">
+			,	open_start_dt = #{open_start_dt}
+			</if>
+			<if test="open_end_dt != null">
+			,	open_end_dt = #{open_end_dt}
+			</if>
+			<if test="open_idx != null">
+			,	open_idx = #{open_idx}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+			,	mod_id = #{mod_id}
+			</if>
+			<if test="moveIdNull != null and moveIdNull == true">
+			,	move_id = null
+			</if>
+			<if test="moveUrlNull != null and moveUrlNull == true">
+			,	move_url = null
+			</if>
+		WHERE
+				popup_id = #{popup_id}
+	</update>
+
+	<delete id="popup-delete" parameterType="PopupVo">
+		DELETE
+		FROM	t_popup
+		WHERE	popup_id = #{popup_id}
+	</delete>
+
+	<select id="popup-select-max-open-idx-from-active" resultType="Integer">
+		select	max(open_idx)
+		from	t_popup
+		where	is_open = 'Y'
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- 배너 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="banner-result-map" type="BannerVo">
+		<id property="banner_id" column="banner_id" />
+		<association property="imgFile" column="img_file_id" javaType="FileVo" select="file-select-by-id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+	</resultMap>
+
+	<sql id="banner-where">
+		<where>
+			<if test="banner_id != null">
+		AND		ORIGIN.banner_id = #{banner_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="img_file_id != null">
+		AND		ORIGIN.img_file_id = #{img_file_id}
+			</if>
+			<if test="move_div != null">
+		AND		ORIGIN.move_div = #{move_div}
+			</if>
+			<if test="move_id != null">
+		AND		ORIGIN.move_id = #{move_id}
+			</if>
+			<if test="move_url != null">
+		AND		ORIGIN.move_url = #{move_url}
+			</if>
+			<if test="is_open != null">
+		AND		ORIGIN.is_open = #{is_open}
+			</if>
+			<if test="open_start_dt != null">
+		AND		ORIGIN.open_start_dt = #{open_start_dt}
+			</if>
+			<if test="open_end_dt != null">
+		AND		ORIGIN.open_end_dt = #{open_end_dt}
+			</if>
+			<if test="open_idx != null">
+		AND		ORIGIN.open_idx = #{open_idx}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="keyword != null">
+		and		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+			<if test="IsProgress != null and IsProgress == true">		<!-- 진행 중 조회 : 현재일자가 시작/종료 사이에 있는 경우 -->
+		AND		date_format(now(), '%Y-%m-%d')  BETWEEN date_format( ORIGIN.open_start_dt, '%Y-%m-%d') AND date_format(ORIGIN.open_end_dt, '%Y-%m-%d')
+			</if>
+		</where>
+	</sql>
+
+	<insert id="banner-insert" parameterType="BannerVo" useGeneratedKeys="true">
+		INSERT	INTO	t_banner
+				(title, img_file_id, move_div, open_idx, reg_id
+		<if test="move_id != null">
+				, move_id
+		</if>
+		<if test="move_url != null">
+				, move_url
+		</if>
+		<if test="is_open != null">
+				, is_open
+		</if>
+				, open_start_dt, open_end_dt, reg_dt)
+		VALUES (#{title}, #{img_file_id}, #{move_div}, #{open_idx}, #{reg_id}
+		<if test="move_id != null">
+				, #{move_id}
+		</if>
+		<if test="move_url != null">
+				, #{move_url}
+		</if>
+		<if test="is_open != null">
+				, #{is_open}
+		</if>
+				, #{open_start_dt}, #{open_end_dt}, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="banner_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="banner-select" parameterType="Map" resultMap="banner-result-map">
+		SELECT	ORIGIN.*
+		FROM	t_banner	ORIGIN
+
+		<include refid="banner-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="banner-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.banner_id)
+		FROM	t_banner	ORIGIN
+		<include refid="banner-where"/>
+	</select>
+
+	<update id="banner-update" parameterType="BannerVo">
+		UPDATE	t_banner
+		SET
+				mod_dt = now()
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="move_div != null">
+			,	move_div = #{move_div}
+			</if>
+			<if test="move_id != null">
+			,	move_id = #{move_id}
+			</if>
+			<if test="move_url != null">
+			,	move_url = #{move_url}
+			</if>
+			<if test="is_open != null">
+			,	is_open = #{is_open}
+			</if>
+			<if test="open_start_dt != null">
+			,	open_start_dt = #{open_start_dt}
+			</if>
+			<if test="open_end_dt != null">
+			,	open_end_dt = #{open_end_dt}
+			</if>
+			<if test="open_idx != null">
+			,	open_idx = #{open_idx}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+			,	mod_id = #{mod_id}
+			</if>
+			<if test="moveIdNull != null and moveIdNull == true">
+			,	move_id = null
+			</if>
+			<if test="moveUrlNull != null and moveUrlNull == true">
+			,	move_url = null
+			</if>
+		WHERE
+				banner_id = #{banner_id}
+	</update>
+
+	<delete id="banner-delete" parameterType="BannerVo">
+		DELETE
+		FROM	t_banner
+		WHERE	banner_id = #{banner_id}
+	</delete>
+
+	<select id="banner-select-max-open-idx-from-active" resultType="Integer">
+		select	max(open_idx)
+		from	t_banner
+		where	is_open = 'Y'
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- 문의 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="qna-result-map" type="QnaVo">
+		<id property="qna_id" column="qna_id" />
+		<association property="attachFile" column="file_id" javaType="FileVo" select="file-select-by-id" />
+		<association property="member" column="member_id" javaType="MemberVo" select="member-select-by-id" />
+		<association property="admin" column="admin_id" javaType="AdminVo" select="admin-select-by-id" />
+	</resultMap>
+	
+	<sql id="qna-where">
+		<where>
+			<if test="qna_id != null">
+		AND		ORIGIN.qna_id = #{qna_id}
+			</if>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<if test="target_div != null">
+		AND		ORIGIN.target_div = #{target_div}
+			</if>
+			<if test="target_id != null">
+		AND		ORIGIN.target_id = #{target_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="body != null">
+		AND		ORIGIN.body = #{body}
+			</if>
+			<if test="file_id != null">
+		AND		ORIGIN.file_id = #{file_id}
+			</if>
+			<if test="is_answerd != null">
+		AND		ORIGIN.is_answerd = #{is_answerd}
+			</if>
+			<if test="ans_title != null">
+		AND		ORIGIN.ans_title = #{ans_title}
+			</if>
+			<if test="ans_body != null">
+		AND		ORIGIN.ans_body = #{ans_body}
+			</if>
+			<if test="member_id != null">
+		AND		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="question_dt != null">
+		AND		ORIGIN.question_dt = #{question_dt}
+			</if>
+			<if test="admin_id != null">
+		AND		ORIGIN.admin_id = #{admin_id}
+			</if>
+			<if test="answer_dt != null">
+		AND		ORIGIN.answer_dt = #{answer_dt}
+			</if>
+			<if test="notTargetDivs != null">
+		and 	(ORIGIN.target_div not in (
+				<foreach item="notTargetDiv" collection="notTargetDivs" separator=",">
+					#{notTargetDiv}
+				</foreach>
+				) or ORIGIN.target_div is null)
+			</if>
+			<if test="pathDownOrganizeId != null">
+		and		find_in_set(ORIGIN.organize_id,	(
+												select	group_concat(organize_id)
+												from	t_organize
+												where	organize_d1_id = #{pathDownOrganizeId}
+												or		organize_d2_id = #{pathDownOrganizeId}
+												or		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+			</if>
+			<if test="keyword != null">
+		and		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+		</where>
+	</sql>
+
+	<insert id="qna-insert" parameterType="QnaVo" useGeneratedKeys="true">
+		INSERT	INTO	t_qna
+				(title, body, member_id
+		<if test="organize_id != null">
+				, organize_id
+		</if>
+		<if test="target_div != null">
+				, target_div
+		</if>
+		<if test="target_id != null">
+				, target_id
+		</if>
+		<if test="file_id != null">
+				, file_id
+		</if>
+		<if test="is_answerd != null">
+				, is_answerd
+		</if>
+		<if test="ans_title != null">
+				, ans_title
+		</if>
+		<if test="ans_body != null">
+				, ans_body
+		</if>
+		<if test="admin_id != null">
+				, admin_id
+		</if>
+		<if test="answer_dt != null">
+				, answer_dt
+		</if>
+				, question_dt)
+		VALUES (#{title}, #{body}, #{member_id}
+		<if test="organize_id != null">
+				, #{organize_id}
+		</if>
+		<if test="target_div != null">
+				, #{target_div}
+		</if>
+		<if test="target_id != null">
+				, #{target_id}
+		</if>
+		<if test="file_id != null">
+				, #{file_id}
+		</if>
+		<if test="is_answerd != null">
+				, #{is_answerd}
+		</if>
+		<if test="ans_title != null">
+				, #{ans_title}
+		</if>
+		<if test="ans_body != null">
+				, #{ans_body}
+		</if>
+		<if test="admin_id != null">
+				, #{admin_id}
+		</if>
+		<if test="answer_dt != null">
+				, #{answer_dt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="qna_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="qna-select" parameterType="Map" resultMap="qna-result-map">
+		SELECT	ORIGIN.*
+		FROM	t_qna	ORIGIN
+
+		<include refid="qna-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="qna-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.qna_id)
+		FROM	t_qna	ORIGIN
+		<include refid="qna-where"/>
+	</select>
+
+	<update id="qna-update" parameterType="QnaVo">
+		UPDATE	t_qna
+		SET
+				qna_id = #{qna_id}
+			<if test="organize_id != null">
+			,	organize_id = #{organize_id}
+			</if>
+			<if test="target_div != null">
+			,	target_div = #{target_div}
+			</if>
+			<if test="target_id != null">
+			,	target_id = #{target_id}
+			</if>
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="body != null">
+			,	body = #{body}
+			</if>
+			<if test="is_answerd != null">
+			,	is_answerd = #{is_answerd}
+			</if>
+			<if test="ans_title != null">
+			,	ans_title = #{ans_title}
+			</if>
+			<if test="ans_body != null">
+			,	ans_body = #{ans_body}
+			</if>
+			<if test="question_dt != null">
+			,	question_dt = #{question_dt}
+			</if>
+		  	<if test="admin_id != null">
+			,	admin_id = #{admin_id}
+			</if>
+			<if test="answer_dt != null">
+			,	answer_dt = #{answer_dt}
+			</if>
+		WHERE
+				qna_id = #{qna_id}
+	</update>
+
+	<delete id="qna-delete" parameterType="QnaVo">
+		DELETE
+		FROM	t_qna
+		WHERE	qna_id = #{qna_id}
+	</delete>
+
+</mapper>
+

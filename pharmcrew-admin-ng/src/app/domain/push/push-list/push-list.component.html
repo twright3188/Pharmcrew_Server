@@ -1,0 +1,120 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">{{req.categoryType === 'AD' ? '마케팅 알림' : req.categoryType === 'NT' ? '약사회 알림' : req.categoryType}} 관리</h1>
+                    <div class="f_r mt_20">Home > {{req.categoryType === 'AD' ? '광고' : req.categoryType === 'NT' ? '알림' : req.categoryType}} 관리 > <span class="fw_600">{{req.categoryType === 'AD' ? '마케팅 알림' : req.categoryType === 'NT' ? '약사회 알림' : req.categoryType}} 관리</span></div>
+                </div>
+
+                <!-- Search -->
+                <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+                <div class="search_wrap mt_20">
+                    <div class="search_title"><i class="fa fa-search"></i> Search</div>
+                    <table class="search_tb">
+                        <colgroup>
+                            <col style="width:150px" />
+                            <col style="width:*" />
+                        </colgroup>
+                        <tr>
+                            <th>기간</th>
+                            <td>
+                                <input type="text" id="datepicker1" class="mr_5" name="reservDtStartDate"
+                                    #reservDtStartDate [(ngModel)]="req.reservDtStartDate"
+                                    (click)="req.reservDtStartDate = reservDtStartDate.value"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                                ~
+                                <input type="text" id="datepicker2" class="mr_5" name="reservDtEndDate"
+                                    #reservDtEndDate [(ngModel)]="req.reservDtEndDate"
+                                    (click)="req.reservDtEndDate = reservDtEndDate.value"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>수신대상</th>
+                            <td>
+                                <widget-organize-selector #organizeSelector></widget-organize-selector>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>발송구분</th>
+                            <td>
+                                <input type="radio" name="sendType" value="ALL" [(ngModel)]="req.sendType" /> 전체
+                                <input type="radio" class="ml_10" name="sendType" value="I" [(ngModel)]="req.sendType" /> 즉시발송
+                                <input type="radio" class="ml_10" name="sendType" value="R" [(ngModel)]="req.sendType" /> 예약발송
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>검색어</th>
+                            <td>
+                                <input type="text" name="keyword" placeholder="검색 조건을 입력 해주세요." class="Width-60" [(ngModel)]="req.keyword" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="search_btn">
+                    <button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button>
+                    <!-- <a [routerLink]="['/admsgs', -1]" class="f_r bg_14" *ngIf="req.categoryType === 'AD'">신규푸시발송</a>
+                    <a [routerLink]="['/pushes', -1]" class="f_r bg_14" *ngIf="req.categoryType === 'NT'">신규푸시발송</a> -->
+                    <a (click)="onClickDetail(-1)" class="f_r bg_14">신규푸시발송</a>
+                </div>
+                </form>
+                <!-- Search -->
+
+                <!-- Table list -->
+                <table class="tb_list01 mt_30">
+                    <colgroup>
+                        <col style="width:80px" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                        <col style="width:*" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>수신대상</th>
+                            <th>발송구분</th>
+                            <th>푸시내용</th>
+                            <th>발송상태</th>
+                            <th>응답/발송건수</th>
+                            <th>발송일시</th>
+                            <th>등록일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="pushes === undefined">
+                            <td colspan="7">등록(검색)된 푸시 메시지가 없습니다.</td>
+                        </tr>
+                        <tr *ngFor="let push of pushes; index as idx">
+                            <td>{{push.pushId}}</td>
+                            <td>{{push.organize === undefined ? '전체' : push.organize.names.toString().split(',').join(' > ')}}</td>
+                            <td>{{push.reserveDate === undefined ? '즉시' : '예약'}}</td>
+                            <td class="text_l">
+                                <!-- <a class="line" [routerLink]="['/admsgs', push.pushId]" *ngIf="req.categoryType === 'AD'">{{push.title}}</a>
+                                <a class="line" [routerLink]="['/pushes', push.pushId]" *ngIf="req.categoryType === 'NT'">{{push.title}}</a> -->
+                                <a class="line" (click)="onClickDetail(push.pushId)">{{push.title}}</a>
+                            </td>
+                            <td>{{push.state === 'R' ? '발송대기중' : push.state === 'S' ? '발송' : push.state}}</td>
+                            <td *ngIf="push.state === 'S'">
+                                {{push.recvCnt}}/{{push.sendCnt}}<br>
+                                <button *ngIf="push.sendCnt > push.recvCnt" class="button03 btn_resend" (click)="onResendClick(idx)">미확인재발송 ></button>
+                            </td>
+                            <td *ngIf="push.state !== 'S'">-</td>
+                            <td>{{push.sendDt | date: 'yyyy.MM.dd HH.mm'}}</td>
+                            <td>{{push.regDt | date: 'yyyy.MM.dd'}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+                <!--// Table list -->
+
+                <!-- Button -->
+                <!-- <div class="btn_wrap text_r mt_20">
+                    <a [routerLink]="['/admsgs', -1]" class="button01 bg_14" *ngIf="req.categoryType === 'AD'">신규푸시발송</a>
+                    <a [routerLink]="['/pushes', -1]" class="button01 bg_14" *ngIf="req.categoryType === 'NT'">신규푸시발송</a>
+                </div> -->
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->

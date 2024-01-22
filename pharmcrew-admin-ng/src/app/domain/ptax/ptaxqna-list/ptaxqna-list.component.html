@@ -1,0 +1,100 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">1:1문의 관리</h1>
+        <div class="f_r mt_20">Home > 팜택스 서비스 관리 > <span class="fw_600">1:1문의 관리</span></div>
+    </div>
+
+    <!-- Search -->
+    <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+    <div class="search_wrap mt_20">
+        <div class="search_title"><i class="fa fa-search"></i> Search</div>
+        <table class="search_tb">
+            <colgroup>
+                <col style="width:150px" />
+                <col style="width:*" />
+                <col style="width:150px" />
+                <col style="width:*" />
+            </colgroup>
+            <tr>
+                <th>기간</th>
+                <td>
+                    <input type="text" id="datepicker1" class="mr_5" name="regDtStartDate"
+                        #regDtStartDate [(ngModel)]="req.regDtStartDate"
+                        (click)="req.regDtStartDate = regDtStartDate.value"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                    ~
+                    <input type="text" id="datepicker2" class="mr_5" name="regDtEndDate"
+                        #regDtEndDate [(ngModel)]="req.regDtEndDate"
+                        (click)="req.regDtEndDate = regDtEndDate.value"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                </td>
+            </tr>
+            <tr>
+                <th>대상</th>
+                <td>
+                    <input type="radio" name="target" value="ALL" [(ngModel)]="req.target" (change)="onChangeTarget()" /> 전체
+                    <input type="radio" class="ml_10" name="target" value="G" [(ngModel)]="req.target" (change)="onChangeTarget()" /> 비회원
+                    <input type="radio" class="ml_10" name="target" value="M" [(ngModel)]="req.target" (change)="onChangeTarget()" /> 팜택스 회원
+                    <input type="text" placeholder="약국명을 입력 해주세요." class="ml_10 w_300" name="pharmName" [(ngModel)]="req.pharmName" [disabled]="req.target !== 'M'" />
+                </td>
+            </tr>
+            <tr>
+                <th>답변 여부</th>
+                <td colspan="3">
+                    <input type="radio" name="answerYn" value="ALL" [(ngModel)]="req.answerYn" /> 전체
+                    <input type="radio" class="ml_10" name="answerYn" value="N" [(ngModel)]="req.answerYn" /> 답변대기
+                    <input type="radio" class="ml_10" name="answerYn" value="Y" [(ngModel)]="req.answerYn" /> 답변완료
+                </td>
+            </tr>
+            <tr>
+                <th>검색어</th>
+                <td colspan="3">
+                    <input type="text" placeholder="검색 조건을 입력 해주세요." class="Width-100" name="keyword" [(ngModel)]="req.keyword" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="search_btn"><button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button></div>
+    </form>
+    <!-- Search -->
+
+    <!-- Table list -->
+    <table class="tb_list01 mt_30">
+        <colgroup>
+            <col style="width:80px" />
+            <col style="width:10%" />
+            <col style="width:*" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>팜택스회원</th>
+                <th>제목</th>
+                <th>문의고객</th>
+                <th>답변상태</th>
+                <th>접수일시</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngIf="qnas === undefined">
+                <td colspan="6">등록(검색)된 문의가 없습니다.</td>
+            </tr>
+            <tr *ngFor="let qna of qnas">
+                <td>{{qna.qnaId}}</td>
+                <td>{{qna.pharmName === undefined ? '비회원' : qna.pharmName}}</td>
+                <!-- <td class="text_l"><a class="line" [routerLink]="['/ptaxqnas', qna.qnaId]">{{qna.title}}</a></td> -->
+                <td class="text_l"><a class="line" (click)="onClickItem(qna.qnaId)">{{qna.title}}</a></td>
+                <td>{{qna.memberName}}</td>
+                <td>{{qna.isAnswered === 'Y' ? '완료' : qna.isAnswered === 'N' ? '대기' : qna.isAnswered}}</td>
+                <td>{{qna.questionDt | date: 'yyyy.MM.dd HH:mm'}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+    <!--// Table list -->
+
+</div>
+<!-- Right Wrap -->

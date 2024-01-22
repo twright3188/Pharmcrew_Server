@@ -1,0 +1,62 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">파트너서비스 관리</h1>
+        <div class="f_r mt_20">Home > 광고 관리 > <span class="fw_600">파트너서비스 관리</span></div>
+
+        <div class="search_wrap mt_20" style="border: 0px;">
+
+        </div>
+        <div class="search_btn">
+            <!-- <a [routerLink]="['/partners', -1]" class="f_r bg_14">등록</a> -->
+            <a (click)="onClickItem(-1)" class="f_r bg_14">등록</a>
+        </div>
+    </div>
+
+    <!-- Table list -->
+    <table class="tb_list01 mt_30">
+        <colgroup>
+            <col style="width:80px" />
+            <col style="width:*" />
+            <col style="width:*" />
+            <col style="width:*" />
+            <col style="width:*" />
+            <col style="width:*" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>파트너서비스 명</th>
+                <th>노출여부</th>
+                <th>이용자 수</th>
+                <th>등록인</th>
+                <th>등록일</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngIf="partners === undefined">
+                <td colspan="6">등록(검색)된 파트너가 없습니다.</td>
+            </tr>
+            <tr *ngFor="let partner of partners; index as idx">
+                <td>{{partner.partnerId}}</td>
+                <!-- <td><a class="line" [routerLink]="['/partners', partner.partnerId]">{{partner.name}}</a></td> -->
+                <td><a class="line" (click)="onClickItem(partner.partnerId)">{{partner.name}}</a></td>
+                <td>{{partner.isOpen === 'Y' ? '노출' : partner.isOpen === 'N' ? '비노출' : partner.isOpen}}</td>
+                <td>{{partner.memberCount | number}}</td>
+                <td>{{partner.regName}}</td>
+                <td>{{partner.regDt | date: 'yyyy.MM.dd'}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+    <!--// Table list -->
+
+    <!-- Button -->
+    <!-- <div class="btn_wrap text_r mt_20">
+        <a [routerLink]="['/partners', -1]" class="button01 bg_14">등록</a>
+    </div> -->
+    <!--// Button -->
+
+</div>
+<!-- Right Wrap -->

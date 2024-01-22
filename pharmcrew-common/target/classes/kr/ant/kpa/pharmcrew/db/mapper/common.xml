@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.common">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<!-- =============================================================================== -->
+	<!-- 조직 -->
+	<!-- =============================================================================== -->
+
+	<sql id="organize-where">
+		<where>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<if test="organize_d1_id != null">
+		AND		ORIGIN.organize_d1_id = #{organize_d1_id}
+			</if>
+			<if test="organize_d2_id != null">
+		AND		ORIGIN.organize_d2_id = #{organize_d2_id}
+			</if>
+			<if test="organize_d3_id != null">
+		AND		ORIGIN.organize_d3_id = #{organize_d3_id}
+			</if>
+			<if test="depth != null">
+		AND		ORIGIN.depth = #{depth}
+			</if>
+			<if test="name != null">
+		AND		ORIGIN.name = #{name}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="organize-insert" parameterType="OrganizeVo" useGeneratedKeys="true">
+		INSERT	INTO	t_organize
+				(organize_d1_id, depth, name, reg_id
+		<if test="organize_d2_id != null">
+				, organize_d2_id
+		</if>
+		<if test="organize_d3_id != null">
+				, organize_d3_id
+		</if>
+				, reg_dt)
+		VALUES (#{organize_d1_id}, #{depth}, #{name}, #{reg_id}
+		<if test="organize_d2_id != null">
+				, #{organize_d2_id}
+		</if>
+		<if test="organize_d3_id != null">
+				, #{organize_d3_id}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="organize_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="organize-select" parameterType="Map" resultType="OrganizeVo">
+		SELECT	ORIGIN.*
+		<if test="withDepthNames != null and withDepthNames == true">
+			,	(select name from t_organize where organize_id = ORIGIN.organize_d1_id) as d1Name
+			,	(select name from t_organize where organize_id = ORIGIN.organize_d2_id) as d2Name
+			,	(select name from t_organize where organize_id = ORIGIN.organize_d3_id) as d3Name
+		</if>
+		FROM	t_organize	ORIGIN
+
+		<include refid="organize-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="organize-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.organize_id)
+		FROM	t_organize	ORIGIN
+		<include refid="organize-where"/>
+	</select>
+
+	<update id="organize-update" parameterType="OrganizeVo">
+		UPDATE	t_organize
+		SET
+				mod_dt = now()
+			<if test="depth != null">
+			,	depth = #{depth}
+			</if>
+			<if test="name != null">
+			,	name = #{name}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				organize_id = #{organize_id}
+	</update>
+
+	<delete id="organize-delete" parameterType="OrganizeVo">
+		DELETE
+		FROM	t_organize
+		WHERE	organize_id = #{organize_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 파일 -->
+	<!-- =============================================================================== -->
+
+	<sql id="file-where">
+		<where>
+			<if test="file_id != null">
+		AND		ORIGIN.file_id = #{file_id}
+			</if>
+			<if test="name != null">
+		AND		ORIGIN.name = #{name}
+			</if>
+			<if test="org_name != null">
+		AND		ORIGIN.org_name = #{org_name}
+			</if>
+			<if test="size != null">
+		AND		ORIGIN.size = #{size}
+			</if>
+			<if test="path != null">
+		AND		ORIGIN.path = #{path}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="fileIds != null">
+		and		ORIGIN.file_id in (
+				<foreach item="fileId" collection="fileIds" separator=",">
+					#{fileId}
+				</foreach>
+				)
+			</if>
+		</where>
+	</sql>
+
+	<insert id="file-insert" parameterType="FileVo" useGeneratedKeys="true">
+		INSERT	INTO	t_file
+				(name, org_name, size, path
+				, reg_dt)
+		VALUES (#{name}, #{org_name}, #{size}, #{path}
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="file_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="file-select" parameterType="Map" resultType="FileVo">
+		SELECT	ORIGIN.*
+		FROM	t_file	ORIGIN
+
+		<include refid="file-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="file-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.file_id)
+		FROM	t_file	ORIGIN
+		<include refid="file-where"/>
+	</select>
+
+	<update id="file-update" parameterType="FileVo">
+		UPDATE	t_file
+		SET
+				mod_dt = now()
+			<if test="name != null">
+			,	name = #{name}
+			</if>
+			<if test="org_name != null">
+			,	org_name = #{org_name}
+			</if>
+			<if test="size != null">
+			,	size = #{size}
+			</if>
+			<if test="path != null">
+			,	path = #{path}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				file_id = #{file_id}
+	</update>
+
+	<delete id="file-delete" parameterType="FileVo">
+		DELETE
+		FROM	t_file
+		WHERE	file_id = #{file_id}
+	</delete>
+
+	<delete id="file-delete-map" parameterType="Map">
+		delete
+		from	t_file
+		where
+		<if test="fileIds != null">
+				file_id in (
+			<foreach item="fileId" collection="fileIds" separator=",">
+					#{fileId}
+			</foreach>
+				)
+		</if>
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 버전 -->
+	<!-- =============================================================================== -->
+
+	<sql id="appversion-where">
+		<where>
+			<if test="version_id != null">
+		AND		ORIGIN.version_id = #{version_id}
+			</if>
+			<if test="os_type != null">
+		AND		ORIGIN.os_type = #{os_type}
+			</if>
+			<if test="version != null">
+		AND		ORIGIN.version = #{version}
+			</if>
+			<if test="detail != null">
+		AND		ORIGIN.detail = #{detail}
+			</if>
+			<if test="forced_yn != null">
+		AND		ORIGIN.forced_yn = #{forced_yn}
+			</if>
+			<if test="open_yn != null">
+		AND		ORIGIN.open_yn = #{open_yn}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="req_version != null">	<!-- 요청한 버전 정보 : 요청한 버전보다 큰 버전정보를 추출한다 -->
+		AND		ORIGIN.version > #{req_version}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="appversion-insert" parameterType="AppVersionVo" useGeneratedKeys="true">
+		INSERT	INTO	t_app_version
+				(os_type, version, detail
+		<if test="forced_yn != null">
+				, forced_yn
+		</if>
+		<if test="open_yn != null">
+				, open_yn
+		</if>
+				, reg_dt)
+		VALUES (#{os_type}, #{version}, #{detail}
+		<if test="forced_yn != null">
+				, #{forced_yn}
+		</if>
+		<if test="open_yn != null">
+				, #{open_yn}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="version_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="appversion-select" parameterType="Map" resultType="AppVersionVo">
+		SELECT	ORIGIN.*
+		<if test="with_forced != null and with_forced == true">	<!-- 버전 가운데, foced_yn이 있는지 확인하기 -->
+			, (SELECT count(*) FROM t_app_version 
+							   WHERE version > #{req_version} 	<!-- 요청타입의 버전보다 크고,  -->
+								AND os_type = #{os_type} <!-- 요청 OS 타입 -->
+								AND open_yn = 'Y'		<!-- OPEN_YN "Y" 인  -->
+								AND forced_yn = 'Y'		<!-- 강제여부 "Y" 인 -->
+				) as force_count
+		</if>
+		FROM	t_app_version	ORIGIN
+
+		<include refid="appversion-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="appversion-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.version_id)
+		FROM	t_app_version	ORIGIN
+		<include refid="appversion-where"/>
+	</select>
+
+	<update id="appversion-update" parameterType="AppVersionVo">
+		UPDATE	t_app_version
+		SET
+				version_id = #{version_id}
+			<if test="os_type != null">
+			,	os_type = #{os_type}
+			</if>
+			<if test="version != null">
+			,	version = #{version}
+			</if>
+			<if test="detail != null">
+			,	detail = #{detail}
+			</if>
+			<if test="forced_yn != null">
+			,	forced_yn = #{forced_yn}
+			</if>
+			<if test="open_yn != null">
+			,	open_yn = #{open_yn}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				version_id = #{version_id}
+	</update>
+
+	<delete id="appversion-delete" parameterType="AppVersionVo">
+		DELETE
+		FROM	t_app_version
+		WHERE	version_id = #{version_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- QR -->
+	<!-- =============================================================================== -->
+
+	<sql id="qr-where">
+		<where>
+			<if test="qr_id != null">
+		AND		ORIGIN.qr_id = #{qr_id}
+			</if>
+			<if test="type != null">
+		AND		ORIGIN.type = #{type}
+			</if>
+			<if test="education_id != null">
+		AND		ORIGIN.education_id = #{education_id}
+			</if>
+			<if test="course_id != null">
+		AND		ORIGIN.course_id = #{course_id}
+			</if>
+			<if test="code != null">
+		AND		ORIGIN.code = #{code}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="qr-insert" parameterType="QrVo" useGeneratedKeys="true">
+		INSERT	INTO	t_qr
+				(education_id, code
+		<if test="type != null">
+				, type
+		</if>
+		<if test="course_id != null">
+				, course_id
+		</if>
+				)
+		VALUES (#{education_id}, #{code}
+		<if test="type != null">
+				, #{type}
+		</if>
+		<if test="course_id != null">
+				, #{course_id}
+		</if>
+				)
+		<selectKey resultType="Long" order="AFTER" keyProperty="qr_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="qr-select" parameterType="Map" resultType="QrVo">
+		SELECT	ORIGIN.*
+		FROM	t_qr	ORIGIN
+
+		<include refid="qr-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="qr-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.qr_id)
+		FROM	t_qr	ORIGIN
+		<include refid="qr-where"/>
+	</select>
+
+	<update id="qr-update" parameterType="QrVo">
+		UPDATE	t_qr
+		SET
+				qr_id = #{qr_id}
+			<if test="code != null">
+			,	code = #{code}
+			</if>
+			<if test="type != null">
+			,	type = #{type}
+			</if>
+				<if test="education_id != null">
+			,	education_id = #{education_id}
+		</if>
+				<if test="course_id != null">
+			,	course_id = #{course_id}
+		</if>
+		WHERE
+				qr_id = #{qr_id}
+	</update>
+
+	<delete id="qr-delete" parameterType="QrVo">
+		DELETE
+		FROM	t_qr
+		WHERE	qr_id = #{qr_id}
+	</delete>
+	
+	<!-- =============================================================================== -->
+	<!-- Affiliation Code -->
+	<!-- =============================================================================== -->
+
+	<sql id="affiliation-where">
+		<where>
+			<if test="ac_code != null">
+		AND		ORIGIN.ac_code = #{ac_code}
+			</if>
+			<if test="ac_name != null">
+		AND		ORIGIN.ac_name = #{ac_name}
+			</if>
+			<if test="ac_branch != null">
+		AND		ORIGIN.ac_branch = #{ac_branch}
+			</if>
+			<if test="ac_chapter != null">
+		AND		ORIGIN.course_id = #{ac_chapter}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="affiliation-select" parameterType="Map" resultType="AffiliationCodeVo">
+		SELECT	ORIGIN.*
+		FROM	kpapassdev.affiliation_code	ORIGIN
+
+		<include refid="affiliation-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+	
+	<!-- =============================================================================== -->
+	<!-- Affiliation Code -->
+	<!-- =============================================================================== -->
+
+	<sql id="university-where">
+		<where>
+			<if test="uc_code != null">
+		AND		ORIGIN.uc_code = #{uc_code}
+			</if>
+			<if test="uc_name != null">
+		AND		ORIGIN.uc_name = #{uc_name}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="university-select" parameterType="Map" resultType="UniversityCodeVo">
+		SELECT	ORIGIN.*
+		FROM	kpapassdev.university_code	ORIGIN
+
+		<include refid="university-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+</mapper>
+

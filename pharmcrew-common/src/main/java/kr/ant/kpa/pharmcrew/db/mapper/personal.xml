@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.personal">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<!-- =============================================================================== -->
+	<!-- 약사회 회원 -->
+	<!-- =============================================================================== -->
+
+	<sql id="personal-where">
+		<where>
+			<if test="pi_license != null">
+		AND		pi_license = #{pi_license}
+			</if>
+			<if test="pi_birth_date != null">
+		AND		pi_birth_date = #{pi_birth_date}
+			</if>
+			<if test="pi_name != null">
+		AND		name = #{pi_name}
+			</if>
+			<if test="pi_email != null">
+		AND		profile_file_id = #{pi_email}
+			</if>
+			<if test="pi_phone != null">
+		AND		handphone = #{pi_phone}
+			</if>
+			<if test="uc_code != null">
+		AND		email = #{uc_code}
+			</if>
+			<if test="ac_code != null">
+		AND		sex_div = #{ac_code}
+			</if>
+		</where>
+	</sql>
+
+ 	<select id="personal-select" parameterType="Map" resultType="PersonalInformationVo">
+		select * from kpapassdev.personal_information		
+ 		<include refid="personal-where"/> 
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+		<include refid="paging"/>
+	</select>
+
+ 	<update id="personal-update" parameterType="PersonalInformationVo">
+		UPDATE	kpapassdev.personal_information 
+		SET
+				pi_license = #{pi_license}
+			<if test="pi_name != null">
+			,	pi_name = #{pi_name}
+			</if>
+			<if test="pi_gender != null">
+			,	pi_gender = #{pi_gender}
+			</if>
+			<if test="pi_birth_date != null">
+			,	pi_birth_date = #{pi_birth_date}
+			</if>
+			<if test="pi_acquisition_year != null">
+			,	pi_acquisition_year = #{pi_acquisition_year}
+			</if>
+			<if test="pi_phone != null">
+			,	pi_phone = #{pi_phone}
+			</if>
+			<if test="pi_cellphone != null">
+			,	pi_cellphone = #{pi_cellphone}
+			</if>
+			<if test="pi_postcode != null">
+			,	pi_postcode = #{pi_postcode}
+			</if>
+			<if test="pi_address != null">
+			,	pi_address = #{pi_address}
+			</if>
+			<if test="pi_address_details != null">
+			,	pi_address_details = #{pi_address_details}
+			</if>
+			<if test="pi_email != null">
+			,	pi_email = #{pi_email}
+			</if>
+			<if test="uc_code != null">
+			,	uc_code = #{uc_code}
+			</if>
+			<if test="pi_graduation_year != null">
+			,	pi_graduation_year = #{pi_graduation_year}
+			</if>
+			<if test="ac_code != null">
+			,	ac_code = #{ac_code}
+			</if>
+			<if test="pi_herbal_manufacture != null">
+			,	pi_herbal_manufacture = #{pi_herbal_manufacture}
+			</if>
+			<if test="pi_final_degree != null">
+			,	pi_final_degree = #{pi_final_degree}
+			</if>
+			<if test="pi_major != null">
+			,	pi_major = #{pi_major}
+			</if>
+			<if test="pi_news_destination != null">
+			,	pi_news_destination = #{pi_news_destination}
+			</if>
+			<if test="pi_mail_destination != null">
+			,	pi_mail_destination = #{pi_mail_destination}
+			</if>
+			<if test="pi_enabled != null">
+			,	pi_enabled = #{pi_enabled}
+			</if>
+			<if test="pi_user_consent != null">
+			,	pi_user_consent = #{pi_user_consent}
+			</if>
+		WHERE
+				pi_license = #{pi_license}
+	</update>
+
+	<delete id="personal-delete" parameterType="String">
+		DELETE
+		FROM	kpapassdev.personal_information
+		WHERE	pi_license = #{pi_license}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 직업정보 -->
+	<!-- =============================================================================== -->
+
+	<sql id="employment-info-where">
+		<where>
+			<if test="ei_order != null">
+		AND		ei_order = #{ei_order}
+			</if>
+			<if test="ry_year != null">
+		AND		ry_year = #{ry_year}
+			</if>
+			<if test="pi_name != null">
+		AND		name = #{pi_name}
+			</if>
+			<if test="pi_license != null">
+		AND		pi_license = #{pi_license}
+			</if>
+			<if test="ec_code != null">
+		AND		ec_code = #{ec_code}
+			</if>
+			<if test="ei_herbal_deal != null">
+		AND		ei_herbal_deal = #{ei_herbal_deal}
+			</if>
+			<if test="ei_animal_drug != null">
+		AND		ei_animal_drug = #{ei_animal_drug}
+			</if>
+			<if test="ei_office != null">
+		AND		ei_office = #{ei_office}
+			</if>
+			<if test="ei_postcode != null">
+		AND		ei_postcode = #{ei_postcode}
+			</if>
+			<if test="ei_phone != null">
+		AND		ei_phone = #{ei_phone}
+			</if>
+			<if test="ei_business_number != null">
+		AND		ei_business_number = #{ei_business_number}
+			</if>
+			<if test="ei_institution_number != null">
+		AND		ei_institution_number = #{ei_institution_number}
+			</if>
+			<if test="ei_division != null">
+		AND		ei_division = #{ei_division}
+			</if>
+			<if test="ei_work_type != null">
+		AND		ei_work_type = #{ei_work_type}
+			</if>
+		</where>
+	</sql>
+
+ 	<select id="employment-info-select" parameterType="Map" resultType="EmploymentInformationVo">
+		select * from kpapassdev.employment_information		
+ 		<include refid="employment-info-where"/> 
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+		<include refid="paging"/>
+	</select>
+
+ 	<update id="employment-info-update" parameterType="EmploymentInformationVo">
+		UPDATE	kpapassdev.employment_information 
+		SET
+				pi_license = #{pi_license}
+			<if test="ec_code != null">
+			,	ec_code = #{ec_code}
+			</if>
+			<if test="ei_etc != null">
+			,	ei_etc = #{ei_etc}
+			</if>
+			<if test="ei_office != null">
+			,	ei_office = #{ei_office}
+			</if>
+			<if test="ei_postcode != null">
+			,	ei_postcode = #{ei_postcode}
+			</if>
+			<if test="ei_address != null">
+			,	ei_address = #{ei_address}
+			</if>
+			<if test="ei_address_details != null">
+			,	ei_address_details = #{ei_address_details}
+			</if>
+			<if test="ei_phone != null">
+			,	ei_phone = #{ei_phone}
+			</if>
+			<if test="ei_business_number != null">
+			,	ei_business_number = #{ei_business_number}
+			</if>
+			<if test="ei_institution_number != null">
+			,	ei_institution_number = #{ei_institution_number}
+			</if>
+			<if test="ei_herbal_deal != null">
+			,	ei_herbal_deal = #{ei_herbal_deal}
+			</if>
+			<if test="ei_animal_drug != null">
+			,	ei_animal_drug = #{ei_animal_drug}
+			</if>
+			<if test="ei_division != null">
+			,	ei_division = #{ei_division}
+			</if>
+			<if test="ei_registration_date != null">
+			,	ei_registration_date = #{ei_registration_date}
+			</if>
+			<if test="ei_work_type != null">
+			,	ei_work_type = #{ei_work_type}
+			</if>
+		WHERE
+				pi_license = #{pi_license} AND ei_order=#{ei_order} AND ry_year=#{ry_year}
+	</update>
+
+	<insert id="employment-info-insert" parameterType="EmploymentInformationVo">
+		INSERT	INTO	kpapassdev.employment_information
+			(ei_order, ry_year, pi_license, ec_code, ei_etc, ei_office,
+			ei_postcode, ei_address, ei_address_details, ei_phone, ei_business_number, ei_institution_number,
+			ei_herbal_deal, ei_animal_drug, ei_division, ei_registration_date, ei_work_type) 
+			VALUES
+			(#{ei_order}, #{ry_year}, #{pi_license}, #{ec_code}, #{ei_etc}, #{ei_office},
+			#{ei_postcode}, #{ei_address}, #{ei_address_details}, #{ei_phone}, #{ei_business_number}, #{ei_institution_number},
+			#{ei_herbal_deal}, #{ei_animal_drug}, #{ei_division}, now(), #{ei_work_type})
+	</insert>
+	
+	<delete id="employment-info-delete" parameterType="String">
+		DELETE
+		FROM	kpapassdev.employment_information
+		WHERE	pi_license = #{pi_license}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 직업정보코드 -->
+	<!-- =============================================================================== -->
+	<sql id="employment-code-where">
+		<where>
+			<if test="ec_code != null">
+		AND		ec_code = #{ec_code}
+			</if>
+			<if test="ec_name != null">
+		AND		ec_name = #{ec_name}
+			</if>
+			<if test="dc_code != null">
+		AND		dc_code = #{dc_code}
+			</if>
+			<if test="ec_enabled != null">
+		AND		ec_enabled = #{ec_enabled}
+			</if>
+		</where>
+	</sql>
+ 	<select id="employment-code-select" parameterType="Map" resultType="EmploymentCodeVo">
+		select * from kpapassdev.employment_code
+ 		<include refid="employment-code-where"/> 
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+		<include refid="paging"/>
+	</select>
+	
+	<!-- =============================================================================== -->
+	<!-- 추가정보 -->
+	<!-- =============================================================================== -->
+
+	<sql id="additional-info-where">
+		<where>
+			<if test="ry_year != null">
+		AND		ry_year = #{ry_year}
+			</if>
+			<if test="pi_license != null">
+		AND		pi_license = #{pi_license}
+			</if>
+			<if test="ai_situation != null">
+		AND		ai_situation = #{ai_situation}
+			</if>
+			<if test="ai_location != null">
+		AND		ai_location = #{ai_location}
+			</if>
+			<if test="ai_chain_join != null">
+		AND		ai_chain_join = #{ai_chain_join}
+			</if>
+		</where>
+	</sql>
+
+ 	<select id="additional-info-select" parameterType="Map" resultType="AdditionalInformationVo">
+		select * from kpapassdev.additional_information		
+ 		<include refid="additional-info-where"/> 
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+		<include refid="paging"/>
+	</select>
+	
+	<insert id="additional-info-insert" parameterType="AdditionalInformationVo">
+		INSERT	INTO	kpapassdev.additional_information
+			(ry_year, pi_license, ai_situation, ai_location, ai_chain_join, ai_current_open_year,
+			ai_initial_open_year, ai_other_career, ai_atc_have, ai_weekday_open, ai_weekday_close, ai_saturday_open,
+			ai_saturday_close, ai_saturday_times, ai_sunday_open, ai_sunday_close, ai_sunday_times, ai_holiday_open, 
+			ai_holiday_close, ai_pharmacist_fulltime, ai_pharmacist_parttime, ai_pharmacist_other, ai_staff_fulltime,
+			ai_staff_parttime, ai_staff_other, ai_career_open, ai_career_work, ai_career_medical, ai_career_pharmaceutical,
+			ai_career_public, ai_career_school, ai_career_etc, ai_pharmacy_area, ai_store_classification, ai_current_work_year,
+			ai_initial_work_year, ai_department, ai_position, ai_current_join_year, ai_initial_join_year) 
+			VALUES
+			(#{ry_year}, #{pi_license}, #{ai_situation}, #{ai_location}, #{ai_chain_join}, #{ai_current_open_year},
+			#{ai_initial_open_year}, #{ai_other_career}, #{ai_atc_have}, #{ai_weekday_open}, #{ai_weekday_close}, #{ai_saturday_open},
+			#{ai_saturday_close}, #{ai_saturday_times}, #{ai_sunday_open}, #{ai_sunday_close}, #{ai_sunday_times}, #{ai_holiday_open}, 
+			#{ai_holiday_close}, #{ai_pharmacist_fulltime}, #{ai_pharmacist_parttime}, #{ai_pharmacist_other}, #{ai_staff_fulltime},
+			#{ai_staff_parttime}, #{ai_staff_other}, #{ai_career_open}, #{ai_career_work}, #{ai_career_medical}, #{ai_career_pharmaceutical},
+			#{ai_career_public}, #{ai_career_school}, #{ai_career_etc}, #{ai_pharmacy_area}, #{ai_store_classification}, #{ai_current_work_year},
+			#{ai_initial_work_year}, #{ai_department}, #{ai_position}, #{ai_current_join_year}, #{ai_initial_join_year})
+	</insert>
+
+ 	<update id="additional-info-update" parameterType="AdditionalInformationVo">
+		UPDATE	kpapassdev.additional_information 
+		SET
+				pi_license = #{pi_license}
+			<if test="ry_year != null">
+			,	ry_year = #{ry_year}
+			</if>
+			<if test="ai_situation != null">
+			,	ai_situation = #{ai_situation}
+			</if>
+			<if test="ai_location != null">
+			,	ai_location = #{ai_location}
+			</if>
+			<if test="ai_chain_join != null">
+			,	ai_chain_join = #{ai_chain_join}
+			</if>
+			<if test="ai_current_open_year != null">
+			,	ai_current_open_year = #{ai_current_open_year}
+			</if>
+			<if test="ai_initial_open_year != null">
+			,	ai_initial_open_year = #{ai_initial_open_year}
+			</if>
+			<if test="ai_other_career != null">
+			,	ai_other_career = #{ai_other_career}
+			</if>
+			<if test="ai_atc_have != null">
+			,	ai_atc_have = #{ai_atc_have}
+			</if>
+			<if test="ai_weekday_open != null">
+			,	ai_weekday_open = #{ai_weekday_open}
+			</if>
+			<if test="ai_weekday_close != null">
+			,	ai_weekday_close = #{ai_weekday_close}
+			</if>
+			<if test="ai_saturday_open != null">
+			,	ai_saturday_open = #{ai_saturday_open}
+			</if>
+			<if test="ai_saturday_close != null">
+			,	ai_saturday_close = #{ai_saturday_close}
+			</if>
+			<if test="ai_saturday_times != null">
+			,	ai_saturday_times = #{ai_saturday_times}
+			</if>
+			<if test="ai_sunday_open != null">
+			,	ai_sunday_open = #{ai_sunday_open}
+			</if>
+			<if test="ai_sunday_close != null">
+			,	ai_sunday_close = #{ai_sunday_close}
+			</if>
+			<if test="ai_sunday_times != null">
+			,	ai_sunday_times = #{ai_sunday_times}
+			</if>
+			<if test="ai_holiday_open != null">
+			,	ai_holiday_open = #{ai_holiday_open}
+			</if>
+			<if test="ai_holiday_close != null">
+			,	ai_holiday_close = #{ai_holiday_close}
+			</if>
+			<if test="ai_pharmacist_fulltime != null">
+			,	ai_pharmacist_fulltime = #{ai_pharmacist_fulltime}
+			</if>
+			<if test="ai_pharmacist_parttime != null">
+			,	ai_pharmacist_parttime = #{ai_pharmacist_parttime}
+			</if>
+			<if test="ai_pharmacist_other != null">
+			,	ai_pharmacist_other = #{ai_pharmacist_other}
+			</if>
+			<if test="ai_staff_fulltime != null">
+			,	ai_staff_fulltime = #{ai_staff_fulltime}
+			</if>
+			<if test="ai_staff_parttime != null">
+			,	ai_staff_parttime = #{ai_staff_parttime}
+			</if>
+			<if test="ai_staff_other != null">
+			,	ai_staff_other = #{ai_staff_other}
+			</if>
+			<if test="ai_career_open != null">
+			,	ai_career_open = #{ai_career_open}
+			</if>
+			<if test="ai_career_work != null">
+			,	ai_career_work = #{ai_career_work}
+			</if>
+			<if test="ai_career_medical != null">
+			,	ai_career_medical = #{ai_career_medical}
+			</if>
+			<if test="ai_career_pharmaceutical != null">
+			,	ai_career_pharmaceutical = #{ai_career_pharmaceutical}
+			</if>
+			<if test="ai_career_public != null">
+			,	ai_career_public = #{ai_career_public}
+			</if>
+			<if test="ai_career_school != null">
+			,	ai_career_school = #{ai_career_school}
+			</if>
+			<if test="ai_career_etc != null">
+			,	ai_career_etc = #{ai_career_etc}
+			</if>
+			<if test="ai_pharmacy_area != null">
+			,	ai_pharmacy_area = #{ai_pharmacy_area}
+			</if>
+			<if test="ai_store_classification != null">
+			,	ai_store_classification = #{ai_store_classification}
+			</if>
+			<if test="ai_current_work_year != null">
+			,	ai_current_work_year = #{ai_current_work_year}
+			</if>
+			<if test="ai_initial_work_year != null">
+			,	ai_initial_work_year = #{ai_initial_work_year}
+			</if>
+			<if test="ai_department != null">
+			,	ai_department = #{ai_department}
+			</if>
+			<if test="ai_position != null">
+			,	ai_position = #{ai_position}
+			</if>
+			<if test="ai_current_join_year != null">
+			,	ai_current_join_year = #{ai_current_join_year}
+			</if>
+			<if test="ai_initial_join_year != null">
+			,	ai_initial_join_year = #{ai_initial_join_year}
+			</if>
+		WHERE
+				pi_license = #{pi_license}
+	</update>
+
+	<delete id="additional-info-delete" parameterType="String">
+		DELETE
+		FROM	kpapassdev.additional_information
+		WHERE	pi_license = #{pi_license}
+	</delete>
+	
+	<!-- =============================================================================== -->
+	<!-- 리포트 -->
+	<!-- =============================================================================== -->
+
+	<sql id="report-where">
+		<where>
+			<if test="ry_year != null">
+		AND		ry_year = #{ry_year}
+			</if>
+			<if test="pi_license != null">
+		AND		pi_license = #{pi_license}
+			</if>
+			<if test="ry_payment_flag != null">
+		AND		ry_payment_flag = #{ry_payment_flag}
+			</if>
+			<if test="ry_report_date != null">
+		AND		ry_report_date = #{ry_report_date}
+			</if>
+			<if test="ry_report_path != null">
+		AND		ry_report_path = #{ry_report_path}
+			</if>
+			<if test="ry_approval_date != null">
+		AND		ry_approval_date = #{ry_approval_date}
+			</if>
+			<if test="ui_id != null">
+		AND		ui_id = #{ui_id}
+			</if>
+			<if test="ry_payment_date != null">
+		AND		ry_payment_date = #{ry_payment_date}
+			</if>
+		</where>
+	</sql>
+
+ 	<select id="report-select" parameterType="Map" resultType="ReportYearVo">
+		select * from kpapassdev.report_year		
+ 		<include refid="report-where"/> 
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+		<include refid="paging"/>
+	</select>
+
+ 	<update id="report-update" parameterType="ReportYearVo">
+		UPDATE	kpapassdev.report_year 
+		SET
+				pi_license = #{pi_license}
+			<if test="ry_payment_flag != null">
+			,	ry_payment_flag = #{ry_payment_flag}
+			</if>
+			<if test="ry_report_date != null">
+			,	ry_report_date = #{ry_report_date}
+			</if>
+			<if test="ry_report_path != null">
+			,	ry_report_path = #{ry_report_path}
+			</if>
+			<if test="ry_approval_date != null">
+			,	ry_approval_date = #{ry_approval_date}
+			</if>
+			<if test="ui_id != null">
+			,	ui_id = #{ui_id}
+			</if>
+			<if test="ry_payment_date != null">
+			,	ry_payment_date = #{ry_payment_date}
+			</if>
+		WHERE
+				pi_license = #{pi_license} AND ry_year = #{ry_year}
+	</update>
+	
+	<insert id="report-insert" parameterType="ReportYearVo">
+		INSERT	INTO	kpapassdev.report_year
+				(ry_year, pi_license
+		<if test="ry_payment_flag != null">
+				, ry_payment_flag
+		</if>
+		<if test="ry_report_date != null">
+				, ry_report_date
+		</if>
+		<if test="ry_report_path != null">
+				, ry_report_path
+		</if>
+		<if test="ry_approval_date != null">
+				, ry_approval_date
+		</if>
+		<if test="ui_id != null">
+				, ui_id
+		</if>
+		<if test="ry_payment_date != null">
+				, ry_payment_date
+		</if>
+				)
+		VALUES (#{ry_year}, #{pi_license}
+		<if test="ry_payment_flag != null">
+				, #{ry_payment_flag}
+		</if>
+		<if test="ry_report_date != null">
+				, #{ry_report_date}
+		</if>
+		<if test="ry_report_path != null">
+				, #{ry_report_path}
+		</if>
+		<if test="ry_approval_date != null">
+				, #{ry_approval_date}
+		</if>
+		<if test="ui_id != null">
+				, #{ui_id}
+		</if>
+		<if test="ry_payment_date != null">
+				, #{ry_payment_date}
+		</if>
+				)
+	</insert>
+
+	<delete id="report-delete" parameterType="String">
+		DELETE
+		FROM	kpapassdev.report_year
+		WHERE	pi_license = #{pi_license} AND ry_year = #{ry_year}
+	</delete>
+	
+	
+	
+</mapper>
+

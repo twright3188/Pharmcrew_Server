@@ -1,0 +1,102 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">공지사항 {{notice.noticeId === undefined ? '등록' : '수정'}}</h1>
+                    <div class="f_r mt_20">Home > 공지사항 관리 > 공지사항 > <span class="fw_600">{{notice.noticeId === undefined ? '등록' : '수정'}}</span></div>
+                </div>
+
+                <div class="clear_wrap mt_10">
+                    <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+                </div>
+                <!-- Table View -->
+                <table class="tb_view01 mt_10">
+                    <colgroup>
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <tr *ngIf="notice.noticeId !== undefined">
+                        <th>등록일</th>
+                        <td>{{notice.regName}}</td>
+                        <th>등록일</th>
+                        <td>{{notice.regDt | date: 'yyyy.MM.dd'}}</td>
+                    </tr>
+                    <tr *ngIf="notice.noticeId !== undefined">
+                        <th>조회수</th>
+                        <td colspan="3">{{notice.viewCnt}}</td>
+                    </tr>
+                    <tr>
+                        <th>노출약사회<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <!-- <select>
+                                <option>지부선택</option>
+                            </select>
+                            <select>
+                                <option>분회선택</option>
+                            </select> -->
+                            <widget-organize-selector #organizeSelector></widget-organize-selector>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>노출여부</th>
+                        <td colspan="3">
+                            <input type="radio" name="isOpen" value="Y" [(ngModel)]="notice.isOpen" /> 노출
+                            <input type="radio" name="isOpen" value="N" [(ngModel)]="notice.isOpen" class="ml_10"/> 비노출
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>제목<span class="tb_star">*</span></th>
+                        <td colspan="3"><input type="text" name="title" [maxLength]="100" [(ngModel)]="notice.title" placeholder="제목을 입력하세요" class="Width-100" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>내용<span class="tb_star">*</span></th>
+                        <td colspan="3"><div id="summernote"></div></td>
+                    </tr>
+                    <tr>
+                        <th>첨부파일</th>
+                        <td colspan="3">
+                            <!-- <p>
+                                <input type="file" />
+                                <a href="#none" class="button02">파일삭제</a>
+                                <a href="#none" class="button02">첨부파일 확인</a>
+                            </p>
+                            <p>
+                                <input type="file" />
+                                <a href="#none" class="button02">파일삭제</a>
+                                <a href="#none" class="button02">첨부파일 확인</a>
+                            </p>
+                            <p>
+                                <input type="file" />
+                                <a href="#none" class="button02">파일삭제</a>
+                                <a href="#none" class="button02">첨부파일 확인</a>
+                            </p>
+                            <p>
+                                <input type="file" />
+                                <a href="#none" class="button02">파일삭제</a>
+                                <a href="#none" class="button02">첨부파일 확인</a>
+                            </p>
+                            <p>
+                                <input type="file" />
+                                <a href="#none" class="button02">파일삭제</a>
+                                <a href="#none" class="button02">첨부파일 확인</a>
+                            </p>
+                            <p class="font_14 fs_12 mt_10">* 10MB 이하 용량의 파일만 등록 가능합니다.</p> -->
+                            <widget-file-upload [attachFiles]="notice.attachFiles"
+                                [checkType]='"notice"' [maxCount]="3" [maxSize]="10485760"
+                                (onView)="onViewAttach($event)"
+                                (onDelete)="onDeleteAttach($event)"></widget-file-upload>
+                        </td>
+                    </tr>
+                </table>
+                <!-- Button -->
+                <div class="btn_wrap text_r mt_20">
+                    <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+                    <a id="save" class="button01 bg_03" *ngIf="notice.noticeId !== undefined" (click)="onDeleteClick()">삭제</a>
+                    <a id="save" class="button01 bg_14" (click)="onSaveClick()">저장</a>
+                </div>
+                <!--// Button -->
+            </div>
+            <!-- contents -->

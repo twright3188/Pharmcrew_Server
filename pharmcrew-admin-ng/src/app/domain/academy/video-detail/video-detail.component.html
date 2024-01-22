@@ -1,0 +1,62 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">동영상 {{video.videoId === undefined ? '등록' : '수정'}}</h1>
+                    <div class="f_r mt_20">Home > 학술정보 관리 > 동영상 관리 > <span class="fw_600">{{video.videoId === undefined ? '등록' : '수정'}}</span></div>
+                </div>
+
+                <div class="clear_wrap mt_10">
+                    <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+                </div>
+                <!-- Table View -->
+                <table class="tb_view01 mt_10">
+                    <colgroup>
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <tr *ngIf="video.videoId !== undefined">
+                        <th>등록일</th>
+                        <td>{{video.regName}}</td>
+                        <th>등록일</th>
+                        <td>{{video.regDt | date: 'yyyy.MM.dd'}}</td>
+                    </tr>
+                    <tr *ngIf="video.videoId !== undefined">
+                        <th>조회수</th>
+                        <td colspan="3">{{video.viewCnt}}</td>
+                    </tr>
+                    <tr>
+                        <th>노출약사회<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <widget-organize-selector #organizeSelector></widget-organize-selector>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>노출여부</th>
+                        <td colspan="3">
+                            <input type="radio" name="openYn" value="Y" [(ngModel)]="video.openYn" /> 노출
+                            <input type="radio" name="openYn" value="N" [(ngModel)]="video.openYn" class="ml_10"/> 비노출
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>제목<span class="tb_star">*</span></th>
+                        <td colspan="3"><input type="text" name="title" [(ngModel)]="video.title" placeholder="제목을 입력하세요" class="Width-100" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Youtube 화면 ID<span class="tb_star">*</span></th>
+                        <td colspan="3"><input type="text" name="url" [(ngModel)]="video.url" placeholder="Youtube 화면 ID를 입력하세요" class="Width-100" />
+                        </td>
+                    </tr>
+                </table>
+                <!-- Button -->
+                <div class="btn_wrap text_r mt_20">
+                    <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+                    <a id="save" class="button01 bg_03" *ngIf="video.videoId !== undefined" (click)="onDeleteClick()">삭제</a>
+                    <a id="save" class="button01 bg_14" (click)="onSaveClick()">저장</a>
+                </div>
+                <!--// Button -->
+            </div>
+            <!-- contents -->

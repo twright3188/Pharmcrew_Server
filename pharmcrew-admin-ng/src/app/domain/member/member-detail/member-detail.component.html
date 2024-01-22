@@ -1,0 +1,75 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">팜크루회원 상세</h1>
+        <div class="f_r mt_20">Home > 회원 관리 <span class="fw_600">팜크루회원 상세</span></div>
+    </div>
+
+    <!-- Table View -->
+    <table class="tb_view01 mt_10">
+        <colgroup>
+            <col style="width:150px" />
+            <col style="width:*" />
+            <col style="width:150px" />
+            <col style="width:*" />
+        </colgroup>
+        <tr>
+            <th>조직</th>
+            <td colspan="3">
+                {{member.organize1 === undefined ? '' : member.organize1.names.toString().split(',').join(' > ')}}<br>
+                {{member.organize2 === undefined ? '' : member.organize2.names.toString().split(',').join(' > ')}}
+            </td>
+        </tr>
+        <tr>
+            <th>이름</th>
+            <td>{{member.name}}</td>
+            <th>생년월일</th>
+            <td>{{member.birthday}}</td>
+        </tr>
+        <tr>
+            <th>성별</th>
+            <td>{{member.sex === 'M' ? '남' : member.sex === 'W' ? '여' : member.sex}}</td>
+            <th>회원가입일</th>
+            <td>{{member.regDt | date: 'yyyy.MM.dd'}}</td>
+        </tr>
+        <tr>
+            <th>휴대전화번호</th>
+            <td colspan="3">{{member.phone}}</td>
+        </tr>
+        <tr>
+            <th>마지막 접속 일자</th>
+            <td colspan="3">{{member.lastLoginDt | date: 'yyyy.MM.dd HH.mm.ss'}}</td>
+        </tr>
+        <tr>
+            <th>이메일 주소</th>
+            <td colspan="3">{{member.email}}</td>
+        </tr>
+        <tr>
+            <th>마케팅 정보 수신 여부</th>
+            <td colspan="3">
+                <input type="checkbox" disabled [checked]="member.adEmailYn === 'Y'" /> 이메일
+                <input type="checkbox" class="ml_10" disabled [checked]="member.adSmsYn === 'Y'" /> SMS
+                <input type="checkbox" class="ml_10" disabled [checked]="member.adPushYn === 'Y'" /> 푸시
+            </td>
+        </tr>
+        <tr>
+            <th>교육이수 현황</th>
+            <td colspan="3">
+                <select class="mr_10 " [(ngModel)]="eduTimeReq.year" (change)="onYearChange()">
+                    <option value="{{year}}" *ngFor="let year of eduTimeReq.year+1 | numLoop: 1: 2020">{{year}}년</option>
+                </select>
+                이수시간 {{eduMinute}} / 미이수시간 {{eduRemainMinute}}
+            </td>
+        </tr>
+    </table>
+
+        <!-- Button -->
+        <div class="btn_wrap text_r mt_20">
+            <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+        </div>
+        <!--// Button -->
+
+
+</div>
+<!-- Right Wrap -->

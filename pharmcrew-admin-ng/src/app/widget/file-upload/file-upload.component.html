@@ -1,0 +1,10 @@
+                            <widget-file [idx]="i" [checkType]="checkType" [maxSize]="maxSize"
+                                [attachFile]="(attachFiles !== undefined && attachFiles.length > i) ? attachFiles[i] : undefined"
+                                (onAttach)="onAttachFile($event)" (onDelete)="onDeleteFile($event)" (onView)="onViewFile($event)"
+                                *ngFor="let i of maxCount | numLoop"></widget-file>
+                            <p class="font_14 fs_12 mt_10" *ngIf="checkType === 'notice'">* 10MB 이하 용량의 파일만 등록 가능합니다.</p>
+                            <p class="font_14 fs_12 mt_10" *ngIf="checkType === 'popup' || checkType === 'banner' || checkType === 'push' || checkType === 'educaitonMap' || checkType === 'educaitonTimetable'">* jpg, png 파일 형식의 10MB 이하 용량의 파일만 등록 가능합니다.</p>
+                            <p class="font_14 fs_12 mt_10" *ngIf="checkType === 'partner'">* png 파일 형식의 10MB 이하 용량의 파일만 등록 가능합니다.</p>
+                            <p class="font_14 fs_12 mt_10" *ngIf="checkType === 'doc'">* pdf 파일 형식의 10MB 이하 용량의 파일만 등록 가능합니다.</p>
+                            <p class="font_14 fs_12 mt_10" *ngIf="checkType === 'ptaxqna'">* 10MB 이하 용량의 파일만 등록 가능합니다.</p>
+                            <p class="font_14 fs_12 mt_10" *ngIf="checkType === 'ptaxnotice'">* 10MB 이하 용량의 파일만 등록 가능합니다.</p>

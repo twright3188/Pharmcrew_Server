@@ -1,0 +1,51 @@
+package kr.ant.kpa.pharmcrew.resp.education;
+
+import com.bumdori.spring.annotation.Description;
+
+import kr.ant.kpa.pharmcrew.resp.PcResp;
+import kr.ant.kpa.pharmcrew.validation.VALIDATION;
+
+import kr.ant.kpa.pharmcrew.resp.education.EduDetail;
+
+/**
+* 교육
+* 2.교육 상세
+ */
+public class EduDetailResp extends PcResp {
+
+	/**
+	*
+	*/
+	private static final long serialVersionUID = -1;
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	 Member Variable
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	@Description("교육 상세 정보")
+	private EduDetail detail;
+
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	 Base Functions 
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	public EduDetailResp() {
+		super();
+	}
+	public EduDetailResp(VALIDATION validation) {
+		super(validation);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	  Member Functions	
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	public EduDetail getDetail() {
+		return detail;
+ 	}
+	public void setDetail(EduDetail detail) {
+		this.detail = detail;
+ 	}
+
+}

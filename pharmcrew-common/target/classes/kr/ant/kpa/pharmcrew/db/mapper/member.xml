@@ -1,0 +1,943 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.member">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<select id="file-select-by-id" resultType="FileVo">
+		select	* from t_file where file_id = #{file_id}
+	</select>
+	
+	<select id="education-select-by-id" resultType="EducationVo">
+		select	* from t_education where education_id = #{education_id}
+	</select>
+	
+	<select id="course-select-by-id" resultType="EducationCourseVo">
+		select	* from t_education_course where course_id = #{course_id}
+	</select>
+
+	<select id="member-select-by-id" resultType="MemberVo">
+		select	* from t_member where member_id = #{member_id}
+	</select>
+	
+	<!-- =============================================================================== -->
+	<!-- 약사회 회원 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="member-result-map" type="MemberVo">
+		<id property="member_id" column="member_id" />
+		<association property="profileFile" column="profile_file_id" javaType="FileVo" select="file-select-by-id" />
+	</resultMap>
+	
+	
+	<sql id="member-where">
+		<where>
+			<if test="member_id != null">
+		AND		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="organize_1_id != null">
+		AND		ORIGIN.organize_1_id = #{organize_1_id}
+			</if>
+			<if test="organize_2_id != null">
+		AND		ORIGIN.organize_2_id = #{organize_2_id}
+			</if>
+			<if test="license_no != null">
+		AND		ORIGIN.license_no = #{license_no}
+			</if>
+			<if test="password != null">
+		AND		ORIGIN.password = #{password}
+			</if>
+			<if test="name != null">
+		AND		ORIGIN.name = #{name}
+			</if>
+			<if test="birthday != null">
+		AND		ORIGIN.birthday = #{birthday}
+			</if>
+			<if test="profile_file_id != null">
+		AND		ORIGIN.profile_file_id = #{profile_file_id}
+			</if>
+			<if test="handphone != null">
+		AND		ORIGIN.handphone = #{handphone}
+			</if>
+			<if test="email != null">
+		AND		ORIGIN.email = #{email}
+			</if>
+			<if test="sex_div != null">
+		AND		ORIGIN.sex_div = #{sex_div}
+			</if>
+			<if test="state_div != null">
+		AND		ORIGIN.state_div = #{state_div}
+			</if>
+			<if test="push_yn != null">
+		AND		ORIGIN.push_yn = #{push_yn}
+			</if>
+			<if test="ad_sms_yn != null">
+		AND		ORIGIN.ad_sms_yn = #{ad_sms_yn}
+			</if>
+			<if test="ad_push_yn != null">
+		AND		ORIGIN.ad_push_yn = #{ad_push_yn}
+			</if>
+			<if test="agree_dt != null">
+		AND		ORIGIN.agree_dt = #{agree_dt}
+			</if>
+			<if test="noti_read_dt != null">
+		AND		ORIGIN.noti_read_dt = #{noti_read_dt}
+			</if>
+			<if test="last_login_dt != null">
+		AND		ORIGIN.last_login_dt = #{last_login_dt}
+			</if>
+			<if test="pharm_name != null">
+		and		ORIGIN.pharm_name = #{pharm_name}
+			</if>
+			<if test="pharm_office != null">
+		and		ORIGIN.pharm_office = #{pharm_office}
+			</if>
+			<if test="ptax_yn != null">
+		and		ORIGIN.ptax_yn = #{ptax_yn}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="regDtNotNull != null and regDtNotNull == true">
+		and		ORIGIN.reg_dt is not null
+			</if>
+			<if test="pathDownOrganizeId != null">
+		<!--and		find_in_set(ORIGIN.organize_id, fn_organize_ids_hierarchy_down(#{pathDownOrganizeId}))-->
+		and		(find_in_set(ORIGIN.organize_1_id,	(
+													select	group_concat(organize_id)
+													from	t_organize
+													where	organize_d1_id = #{pathDownOrganizeId}
+													or		organize_d2_id = #{pathDownOrganizeId}
+													or		organize_d3_id = #{pathDownOrganizeId}
+													)
+				)
+			or	find_in_set(ORIGIN.organize_2_id,	(
+													select	group_concat(organize_id)
+													from	t_organize
+													where	organize_d1_id = #{pathDownOrganizeId}
+													or		organize_d2_id = #{pathDownOrganizeId}
+													or		organize_d3_id = #{pathDownOrganizeId}
+													)
+				))
+			</if>
+			<if test="keyword != null">
+		and		(ORIGIN.name like concat('%', #{keyword}, '%')
+			or	ORIGIN.license_no like concat('%', #{keyword}, '%'))
+			</if>
+		</where>
+	</sql>
+
+	<insert id="member-insert" parameterType="MemberVo" useGeneratedKeys="true">
+		INSERT	INTO	t_member
+				(organize_1_id, license_no, password, name, birthday, handphone, sex_div
+		<if test="organize_2_id != null">
+				, organize_2_id
+		</if>
+		<if test="profile_file_id != null">
+				, profile_file_id
+		</if>
+		<if test="email != null">
+				, email
+		</if>
+		<if test="state_div != null">
+				, state_div
+		</if>
+		<if test="push_yn != null">
+				, push_yn
+		</if>
+		<if test="ad_sms_yn != null">
+				, ad_sms_yn
+		</if>
+		<if test="ad_push_yn != null">
+				, ad_push_yn
+		</if>
+		<if test="agree_dt != null">
+				, agree_dt
+		</if>
+		<if test="noti_read_dt != null">
+				, noti_read_dt
+		</if>
+		<if test="last_login_dt != null">
+				, last_login_dt
+		</if>
+				, reg_dt)
+		VALUES (#{organize_1_id}, #{license_no}, #{password}, #{name}, #{birthday}, #{handphone}, #{sex_div}
+		<if test="organize_2_id != null">
+				, #{organize_2_id}
+		</if>
+		<if test="profile_file_id != null">
+				, #{profile_file_id}
+		</if>
+		<if test="email != null">
+				, #{email}
+		</if>
+		<if test="state_div != null">
+				, #{state_div}
+		</if>
+		<if test="push_yn != null">
+				, #{push_yn}
+		</if>
+		<if test="ad_sms_yn != null">
+				, #{ad_sms_yn}
+		</if>
+		<if test="ad_push_yn != null">
+				, #{ad_push_yn}
+		</if>
+		<if test="agree_dt != null">
+				, #{agree_dt}
+		</if>
+		<if test="noti_read_dt != null">
+				, #{noti_read_dt}
+		</if>
+		<if test="last_login_dt != null">
+				, #{last_login_dt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="member_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="member-select" parameterType="Map" resultMap="member-result-map">
+		SELECT	ORIGIN.*
+				, (SELECT name FROM t_organize where organize_id = ORG.organize_d1_id) as org_0_name <!-- 상위 조직 이름 가져오기 -->
+				, (SELECT name FROM t_organize where organize_id = ORG.organize_d2_id) as org_1_name <!-- 상위 조직 이름 가져오기 -->
+				, ORG.name as org_2_name <!-- 현재 조직 이름 가져오기 -->
+		FROM	t_member	ORIGIN
+		JOIN	t_organize ORG ON ORG.organize_id = ORIGIN.organize_1_id
+
+		<include refid="member-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="member-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.member_id)
+		FROM	t_member	ORIGIN
+		<include refid="member-where"/>
+	</select>
+
+	<update id="member-update" parameterType="MemberVo">
+		UPDATE	t_member
+		SET
+				mod_dt = now()
+			<if test="license_no != null">
+			,	license_no = #{license_no}
+			</if>
+			<if test="password != null">
+			,	password = #{password}
+			</if>
+			<if test="name != null">
+			,	name = #{name}
+			</if>
+			<if test="birthday != null">
+			,	birthday = #{birthday}
+			</if>
+			<if test="profile_file_id != null">
+			,	profile_file_id = #{profile_file_id}
+			</if>
+			<if test="isEmptyProfileId != null and isEmptyProfileId == true">
+			,	profile_file_id = null
+			</if>
+			<if test="handphone != null">
+			,	handphone = #{handphone}
+			</if>
+			<if test="email != null">
+			,	email = #{email}
+			</if>
+			<if test="sex_div != null">
+			,	sex_div = #{sex_div}
+			</if>
+			<if test="state_div != null">
+			,	state_div = #{state_div}
+			</if>
+			<if test="push_yn != null">
+			,	push_yn = #{push_yn}
+			</if>
+			<if test="ad_sms_yn != null">
+			,	ad_sms_yn = #{ad_sms_yn}
+			</if>
+			<if test="ad_push_yn != null">
+			,	ad_push_yn = #{ad_push_yn}
+			</if>
+			<if test="agree_dt != null">
+			,	agree_dt = #{agree_dt}
+			</if>
+			<if test="noti_read_dt != null">
+			,	noti_read_dt = #{noti_read_dt}
+			</if>
+			<if test="last_login_dt != null">
+			,	last_login_dt = #{last_login_dt}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				member_id = #{member_id}
+	</update>
+
+	<delete id="member-delete" parameterType="MemberVo">
+		DELETE
+		FROM	t_member
+		WHERE	member_id = #{member_id}
+	</delete>
+
+	<select id="member-select-pharm-name" resultType="String">
+		select	pharm_name
+		from	t_member
+		group	by pharm_name
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- 회원 알림 -->
+	<!-- =============================================================================== -->
+
+	<sql id="membernoti-where">
+		<where>
+			<if test="noti_id != null">
+		AND		ORIGIN.noti_id = #{noti_id}
+			</if>
+			<if test="member_id != null">
+		AND		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="push_id != null">
+		AND		ORIGIN.push_id = #{push_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="body != null">
+		AND		ORIGIN.body = #{body}
+			</if>
+			<if test="cartegory_div != null">
+		AND		ORIGIN.cartegory_div = #{cartegory_div}
+			</if>
+			<if test="move_div != null">
+		AND		ORIGIN.move_div = #{move_div}
+			</if>
+			<if test="move_url != null">
+		AND		ORIGIN.move_url = #{move_url}
+			</if>
+			<if test="move_id != null">
+		AND		ORIGIN.move_id = #{move_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="recv_dt != null">
+		AND		ORIGIN.recv_dt = #{recv_dt}
+			</if>
+			<if test="license_no != null">	<!-- 면허번호로 사용자 아이디 찾기 -->
+		AND		ORIGIN.member_id = (SELECT member_id FROM t_member WHERE license_no = #{license_no})
+			</if>
+			<if test="unread_member_id != null">	<!-- 면허번호로 사용자 아이디 찾기 -->
+		AND		( ORIGIN.member_id = #{unread_member_id}
+				AND ORIGIN.reg_dt > (SELECT noti_read_dt FROM t_member WHERE member_id = #{unread_member_id})
+				)
+			</if>
+			<if test="recvDtIsNull != null and recvDtIsNull == true">	<!-- 수신 확인 하지 않음 -->
+		and		ORIGIN.recv_dt is null
+			</if>
+		</where>
+	</sql>
+
+	<insert id="membernoti-insert" parameterType="MemberNotiVo" useGeneratedKeys="true">
+		INSERT	INTO	t_member_noti
+				(member_id, push_id, title, body, cartegory_div,
+		<if test="move_div != null">
+				, move_div
+		</if>
+		<if test="move_url != null">
+				, move_url
+		</if>
+		<if test="move_id != null">
+				, move_id
+		</if>
+		<if test="recv_dt != null">
+				, recv_dt
+		</if>
+				, reg_dt)
+		VALUES (#{member_id}, #{push_id}, #{title}, #{body}, #{cartegory_div},
+		<if test="move_div != null">
+		    	, #{move_div}
+		</if>
+		<if test="move_url != null">
+				, #{move_url}
+		</if>
+		<if test="move_id != null">
+				, #{move_id}
+		</if>
+		<if test="recv_dt != null">
+				, #{recv_dt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="noti_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="membernoti-select" parameterType="Map" resultType="MemberNotiVo">
+		SELECT	ORIGIN.*
+		FROM	t_member_noti	ORIGIN
+
+		<include refid="membernoti-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="membernoti-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.noti_id)
+		FROM	t_member_noti	ORIGIN
+		<include refid="membernoti-where"/>
+	</select>
+
+	<update id="membernoti-update" parameterType="MemberNotiVo">
+		UPDATE	t_member_noti
+		SET
+				noti_id = #{noti_id}
+			<if test="push_id != null">
+			,	push_id = #{push_id}
+			</if>
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="body != null">
+			,	body = #{body}
+			</if>
+			<if test="cartegory_div != null">
+			,	cartegory_div = #{cartegory_div}
+			</if>
+			<if test="move_div != null">
+			,	move_div = #{move_div}
+			</if>
+			<if test="move_url != null">
+			,	move_url = #{move_url}
+			</if>
+			<if test="move_id != null">
+			,	move_id = #{move_id}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="recv_dt != null">
+			,	recv_dt = #{recv_dt}
+			</if>
+		WHERE
+				noti_id = #{noti_id}
+	</update>
+
+	<delete id="membernoti-delete" parameterType="MemberNotiVo">
+		DELETE
+		FROM	t_member_noti
+		WHERE	noti_id = #{noti_id}
+	</delete>
+
+	<insert id="membernoti-insert-list" parameterType="Map">
+		insert	into t_member_noti
+				(member_id, push_id, title, body, cartegory_div, move_div, move_id, move_url, reg_dt)
+		values
+		<foreach item="memberId" collection="memberIds" separator=",">
+				(#{memberId}, #{push_id}, #{title}, #{body}, #{category_div}, #{move_div}, #{move_id}, #{move_url}, #{reg_dt})
+		</foreach>
+	</insert>
+
+	<!-- =============================================================================== -->
+	<!-- 회원 교육 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="member-education-result-map" type="MemberEducationVo">
+		<id property="attend_id" column="attend_id" />
+		<association property="educationVo" column="education_id" javaType="EducationVo" select="education-select-by-id" />
+		<association property="courseVo" column="course_id" javaType="EducationCourseVo" select="course-select-by-id" />
+		<association property="memberVo" column="member_id" javaType="MemberVo" select="member-select-by-id" />
+	</resultMap>
+	
+	<sql id="membereducation-where">
+		<where>
+			<if test="attend_id != null">
+		AND		ORIGIN.attend_id = #{attend_id}
+			</if>
+			<if test="member_id != null">
+		AND		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="education_id != null">
+		AND		ORIGIN.education_id = #{education_id}
+			</if>
+			<if test="course_id != null">
+		AND		ORIGIN.course_id = #{course_id}
+			</if>
+			<if test="start_qr_id != null">
+		AND		ORIGIN.start_qr_id = #{start_qr_id}
+			</if>
+			<if test="start_dt != null">
+		AND		ORIGIN.start_dt = #{start_dt}
+			</if>
+			<if test="end_qr_id != null">
+		AND		ORIGIN.end_qr_id = #{end_qr_id}
+			</if>
+			<if test="end_dt != null">
+		AND		ORIGIN.end_dt = #{end_dt}
+			</if>
+			<if test="take_min != null">
+		AND		ORIGIN.take_min = #{take_min}
+			</if>
+			<if test="approval != null">
+		AND		ORIGIN.approval = #{approval}
+			</if>
+			<if test="eval_star != null">
+		AND		ORIGIN.eval_star = #{eval_star}
+			</if>
+			<if test="eval_body != null">
+		AND		ORIGIN.eval_body = #{eval_body}
+			</if>
+			<if test="eval_reg_dt != null">
+		AND		ORIGIN.eval_reg_dt = #{eval_reg_dt}
+			</if>
+			<if test="eval_mod_dt != null">
+		AND		ORIGIN.eval_mod_dt = #{eval_mod_dt}
+			</if>
+			<if test="empty_course_id != null and empty_course_id == true"> <!-- course_id 없이 조회해야 함 -->
+		AND		ORIGIN.course_id is null
+			</if>
+			<if test="search_year != null">
+		AND		DATE_FORMAT(ORIGIN.start_dt, '%Y') = #{search_year}
+			</if>
+			<if test="evalStarNotNull != null and evalStarNotNull == true">	<!-- 후기가 있는 것만 -->
+		and		ORIGIN.eval_star is not null
+			</if>
+			<if test="keyword != null">
+		and		MEMBER.name like concat('%', #{keyword}, '%')
+			</if>
+			<if test="nowProgress != null and nowProgress == true">	<!-- 교육 진행중인지? approval:R, start_dt만 있고 교육의 종료가 없는 것, 너무 오래 되지 않은 것 : beksung -->
+		AND		(
+					ORIGIN.start_dt is not null 
+			AND		ORIGIN.end_dt is null
+				)	
+			</if>
+		</where>
+	</sql>
+
+	<insert id="membereducation-insert" parameterType="MemberEducationVo" useGeneratedKeys="true">
+		INSERT	INTO	t_member_education
+				(member_id, education_id, start_qr_id, take_min
+		<if test="course_id != null">
+				, course_id
+		</if>
+		<if test="end_qr_id != null">
+				, end_qr_id
+		</if>
+		<if test="end_dt != null">
+				, end_dt
+		</if>
+		<if test="approval != null">
+				, approval
+		</if>
+		<if test="eval_star != null">
+				, eval_star
+		</if>
+		<if test="eval_body != null">
+				, eval_body
+		</if>
+		<if test="eval_reg_dt != null">
+				, eval_reg_dt
+		</if>
+		<if test="eval_mod_dt != null">
+				, eval_mod_dt
+		</if>
+				, start_dt)
+		VALUES (#{member_id}, #{education_id}, #{start_qr_id}, #{take_min}
+		<if test="course_id != null">
+				, #{course_id}
+		</if>
+		<if test="end_qr_id != null">
+				, #{end_qr_id}
+		</if>
+		<if test="end_dt != null">
+				, #{end_dt}
+		</if>
+		<if test="approval != null">
+				, #{approval}
+		</if>
+		<if test="eval_star != null">
+				, #{eval_star}
+		</if>
+		<if test="eval_body != null">
+				, #{eval_body}
+		</if>
+		<if test="eval_reg_dt != null">
+				, #{eval_reg_dt}
+		</if>
+		<if test="eval_mod_dt != null">
+				, #{eval_mod_dt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="attend_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="membereducation-select" parameterType="Map" resultMap="member-education-result-map">
+		SELECT	ORIGIN.*
+		FROM	t_member_education	ORIGIN
+		<if test="keyword != null">
+		left	join t_member MEMBER on MEMBER.member_id = ORIGIN.member_id
+		</if>
+
+		<include refid="membereducation-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="membereducation-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.attend_id)
+		FROM	t_member_education	ORIGIN
+		<include refid="membereducation-where"/>
+	</select>
+
+	<update id="membereducation-update" parameterType="MemberEducationVo">
+		UPDATE	t_member_education
+		SET
+				attend_id = #{attend_id}
+			<if test="start_dt != null">
+			,	start_dt = #{start_dt}
+			</if>
+			<if test="end_qr_id != null">
+			, 	end_qr_id = #{end_qr_id}
+			</if>
+			<if test="end_dt != null">
+			,	end_dt = #{end_dt}
+			</if>
+			<if test="take_min != null">
+			,	take_min = #{take_min}
+			</if>
+			<if test="approval != null">
+			,	approval = #{approval}
+			</if>
+			<if test="eval_star != null">
+			,	eval_star = #{eval_star}
+			</if>
+			<if test="eval_body != null">
+			,	eval_body = #{eval_body}
+			</if>
+			<if test="eval_reg_dt != null">
+			,	eval_reg_dt = #{eval_reg_dt}
+			</if>
+			<if test="eval_mod_dt != null">
+			,	eval_mod_dt = #{eval_mod_dt}
+			</if>
+		WHERE
+				attend_id = #{attend_id}
+	</update>
+
+	<delete id="membereducation-delete" parameterType="MemberEducationVo">
+		DELETE
+		FROM	t_member_education
+		WHERE	attend_id = #{attend_id}
+	</delete>
+
+	<select id="membereducation-select-eval" parameterType="Map" resultType="Map">
+		select	count(attend_id) as evalCnt,
+				round(avg(eval_star)) as evalStarAvg
+		from	t_member_education
+		where	education_id = #{education_id}
+		<if test="course_id != null">
+		and		course_id = #{course_id}
+		</if>
+		and		eval_star is not null
+	</select>
+
+	<update id="membereducation-update-map" parameterType="Map">
+		update	t_member_education
+		set
+		<if test="approval != null">
+				approval = #{approval}
+		</if>
+		where
+		<if test="attendIds != null">
+				attend_id in (
+			<foreach item="attendId" collection="attendIds" separator=",">
+				 	#{attendId}
+			</foreach>
+				)
+		</if>
+	</update>
+
+	<select id="membereducation-select-take-min-sum" parameterType="Map" resultType="Integer">
+		select	ifnull(sum(take_min), 0)
+		from	t_member_education
+		where	member_id = #{member_id}
+		and		approval = 'Y'
+		and		date_format(end_dt, '%Y') = #{year}
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- 회원 설문 -->
+	<!-- =============================================================================== -->
+
+	<sql id="membersurvey-where">
+		<where>
+			<if test="member_id != null">
+		AND		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="survey_id != null">
+		AND		ORIGIN.survey_id = #{survey_id}
+			</if>
+			<if test="question_idx != null">
+		AND		ORIGIN.question_idx = #{question_idx}
+			</if>
+			<if test="answer != null">
+		AND		ORIGIN.answer = #{answer}
+			</if>
+			<if test="survey_dt != null">
+		AND		ORIGIN.survey_dt = #{survey_dt}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="membersurvey-insert" parameterType="MemberSurveyVo">
+		INSERT	INTO	t_member_survey
+				(member_id, survey_id, question_idx, answer, survey_dt)
+		VALUES (#{member_id}, #{survey_id}, #{question_idx}, #{answer}, now())
+		ON		DUPLICATE KEY		<!-- 중복 시에는 answer, survey_dt 업데이트 : beksung -->
+		UPDATE 	answer = #{answer}	
+			,	survey_dt = now()
+	</insert>
+
+	<select id="membersurvey-select" parameterType="Map" resultType="MemberSurveyVo">
+		SELECT	ORIGIN.*
+		<if test="withMember != null">	<!-- withMember, 회원명: dhchoi -->
+			,	M.name as memberName
+		</if>
+		FROM	t_member_survey	ORIGIN
+		<if test="withMember != null">
+		left	join t_member M on M.member_id = ORIGIN.member_id
+		</if>
+
+		<include refid="membersurvey-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="membersurvey-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.member_id)
+		FROM	t_member_survey	ORIGIN
+		<include refid="membersurvey-where"/>
+	</select>
+
+	<update id="membersurvey-update" parameterType="MemberSurveyVo">
+		UPDATE	t_member_survey
+		SET
+				member_id = #{member_id}
+			,	survey_id = #{survey_id}
+			,	question_idx = #{question_idx}
+			<if test="answer != null">
+			,	answer = #{answer}
+			</if>
+			<if test="survey_dt != null">
+			,	survey_dt = #{survey_dt}
+			</if>
+		WHERE
+				member_id = #{member_id}
+				AND survey_id = #{survey_id}
+				AND question_idx = #{question_idx}
+	</update>
+
+	<delete id="membersurvey-delete" parameterType="MemberSurveyVo">
+		DELETE
+		FROM	t_member_survey
+		WHERE	member_id = #{member_id}	AND survey_id = #{survey_id}	AND question_idx = #{question_idx}
+	</delete>
+
+	<!-- 멤버의 답변 리스트로 추가하기 -->
+	<insert id="membersurvey-merge-list" parameterType="Map">
+		INSERT	INTO	t_member_survey
+				(member_id, survey_id, question_idx, answer, survey_dt)
+		VALUES 
+		<foreach item="answer" collection="answers" separator=",">
+				(#{answer.member_id}, #{survey_id}, #{answer.question_idx}, #{answer.answer}, now())
+		</foreach>
+		ON		DUPLICATE KEY		<!-- 중복 시에는 answer, survey_dt 업데이트 : beksung -->
+		UPDATE 	answer = values(answer)
+			,	survey_dt = now()
+	</insert>
+
+
+
+	<!-- =============================================================================== -->
+	<!-- 회원 파트너 서비스 -->
+	<!-- =============================================================================== -->
+
+	<select id="partner-select-by-id" resultType="PartnersVo">
+		select	* from t_partners where partner_id = #{partner_id}
+	</select>
+	
+	<select id="partner-icon-select-by-id" resultType="FileVo">
+		select	* from t_file where file_id = (select icon_file_id from t_partners where partner_id = #{partner_id})
+	</select>
+	
+	<resultMap id="member-partner-result-map"
+	type="MemberPartnerVo">
+		<id property="member_id" column="member_id" />
+		<association property="partnersVo" column="partner_id" javaType="PartnersVo" select="partner-select-by-id" />
+		<association property="iconFile" column="partner_id" javaType="FileVo" select="partner-icon-select-by-id" />
+	</resultMap>
+	
+	
+	<sql id="memberpartner-where">
+		<where>
+			<if test="member_id != null">
+		AND		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="partner_id != null">
+		AND		ORIGIN.partner_id = #{partner_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="memberpartner-insert" parameterType="MemberPartnerVo">
+		INSERT	INTO	t_member_partner
+				(member_id, partner_id, reg_dt)
+		VALUES (#{member_id}, #{partner_id}, now())
+		ON		DUPLICATE KEY		<!-- 멤버아이디, 파트너 아이디 중복 시에는 reg_dt 업데이트 : beksung -->
+		UPDATE 	reg_dt = now()
+	</insert>
+
+	<select id="memberpartner-select" parameterType="Map" resultMap="member-partner-result-map">
+		SELECT	ORIGIN.*
+		FROM	t_member_partner	ORIGIN
+
+		<include refid="memberpartner-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="memberpartner-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.member_id)
+		FROM	t_member_partner	ORIGIN
+		<include refid="memberpartner-where"/>
+	</select>
+
+	<update id="memberpartner-update" parameterType="MemberPartnerVo">
+		UPDATE	t_member_partner
+		SET
+				member_id = #{member_id}
+			,	partner_id = #{partner_id}
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				member_id = #{member_id}
+				AND partner_id = #{partner_id}
+	</update>
+
+	<delete id="memberpartner-delete" parameterType="MemberPartnerVo">
+		DELETE
+		FROM	t_member_partner
+		WHERE	member_id = #{member_id}	AND partner_id = #{partner_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 회원 인증 번호 -->
+	<!-- =============================================================================== -->
+
+	<sql id="memberauth-where">
+		<where>
+			<if test="member_id != null">
+		AND		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="auth_code != null">
+		AND		ORIGIN.auth_code = #{auth_code}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="memberauth-insert" parameterType="MemberAuthVo">
+		INSERT	INTO	t_member_auth
+				(member_id, auth_code, reg_dt)
+		VALUES (#{member_id}, #{auth_code}, now())
+		ON		DUPLICATE KEY		<!-- 멤버아이디 중복 시에는 auth_code, reg_dt 업데이트 : beksung -->
+		UPDATE 	auth_code = #{auth_code}	
+			,	reg_dt = now()
+	</insert>
+
+	<select id="memberauth-select" parameterType="Map" resultType="MemberAuthVo">
+		SELECT	ORIGIN.*
+		FROM	t_member_auth	ORIGIN
+
+		<include refid="memberauth-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="memberauth-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.member_id)
+		FROM	t_member_auth	ORIGIN
+		<include refid="memberauth-where"/>
+	</select>
+
+	<update id="memberauth-update" parameterType="MemberAuthVo">
+		UPDATE	t_member_auth
+		SET
+				member_id = #{member_id}
+			<if test="auth_code != null">
+			,	auth_code = #{auth_code}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				member_id = #{member_id}
+	</update>
+
+	<delete id="memberauth-delete" parameterType="MemberAuthVo">
+		DELETE
+		FROM	t_member_auth
+		WHERE	member_id = #{member_id}
+	</delete>
+
+</mapper>
+

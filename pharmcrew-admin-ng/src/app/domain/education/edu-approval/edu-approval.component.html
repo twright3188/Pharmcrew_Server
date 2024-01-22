@@ -1,0 +1,236 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">교육 이수 상세</h1>
+        <div class="f_r mt_20">Home > 교육 관리 > 교육 이수 관리 > <span class="fw_600">상세</span></div>
+    </div>
+    
+    <!-- Table View -->
+    <table class="tb_view01 mt_10">
+        <colgroup>
+            <col style="width:180px" />
+            <col style="width:*" />
+            <col style="width:180px" />
+            <col style="width:*" />
+        </colgroup>
+        <tr>
+            <th>등록인</th>
+            <td>{{education.regName}}</td>
+            <th>등록일</th>
+            <td>{{education.regDt | date: 'yyyy.MM.dd'}}</td>
+        </tr>
+        <tr *ngIf="education.authType === 'A'">
+            <th>교육이수 완료</th>
+            <td colspan="3">{{education.approvalCnt}}명 <a class="button02 bg_03" id="pop_list01" (click)="onApprovalDetailClick()">상세</a></td>
+        </tr>
+        <tr>
+            <th>교육 주관</th>
+            <td colspan="3" *ngIf="education.organize === undefined">전체</td>
+            <td colspan="3" *ngIf="education.organize !== undefined">{{education.organize.names[0]}}{{education.organize.names.length > 1 ? ' > ' + education.organize.names[1] : ''}}{{education.organize.names.length > 2 ? ' > ' + education.organize.names[2] : ''}}</td>
+        </tr>
+        <tr>
+            <th>교육 일시</th>
+            <td colspan="3">{{education.startDate | date: 'yyyy.MM.dd'}} ~ {{education.endDate | date: 'yyyy.MM.dd'}} {{education.startHour}}:{{education.startMinute}} ~ {{education.endHour}}:{{education.endMinute}}</td>
+        </tr>
+        <tr>
+            <th>교육 장소</th>
+            <td colspan="3">{{education.address}} {{education.addressDetail}}</td>
+        </tr>
+        <tr>
+            <th>{{education.authType === 'A' ? '교육' : education.authType === 'P' ? '대표' : education.authType}} 제목</th>
+            <td colspan="3">{{education.title}}</td>
+        </tr>
+        <tr *ngIf="education.authType === 'A'">
+            <th>교육 내용</th>
+            <td colspan="3">
+                <!-- Table list -->
+                <table class="tb_list02">
+                    <colgroup>
+                        <col style="width:*" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>구분</th>
+                            <th>시간</th>
+                            <th>강의제목</th>
+                            <th>강사명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let courses of coursess.coursess">
+                        <tr *ngFor="let course of courses">
+                            <td>{{course.type}}</td>
+                            <td>{{course.startHour}}:{{course.startMinute}} ~ {{course.endHour}}:{{course.endMinute}}</td>
+                            <td>{{course.title}}</td>
+                            <td>{{course.teacher}}</td>
+                        </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
+                <!--// Table list -->
+            </td>
+        </tr>
+        <tr *ngIf="education.authType === 'A'">
+            <th>교육 평점</th>
+            <td colspan="3">
+                <span class="mr_20">
+                    <img src="/assets/images/ico_star_{{evalStarAvg > 0 ? 'on' : 'off'}}.png" alt="star on" />
+                    <img src="/assets/images/ico_star_{{evalStarAvg > 1 ? 'on' : 'off'}}.png" alt="star on" />
+                    <img src="/assets/images/ico_star_{{evalStarAvg > 2 ? 'on' : 'off'}}.png" alt="star on" />
+                    <img src="/assets/images/ico_star_{{evalStarAvg > 3 ? 'on' : 'off'}}.png" alt="star on" />
+                    <img src="/assets/images/ico_star_{{evalStarAvg > 4 ? 'on' : 'off'}}.png" alt="star off" />
+                </span>
+                <span class="mr_20"><strong>{{evalStarAvg}}</strong>/5점</span>
+                <span class="mr_20">{{evalCnt}}명 참여</span>
+            </td>
+        </tr>
+        <tr *ngIf="education.authType === 'P'">
+            <th>강의 선택</th>
+            <td colspan="3">
+                <select [(ngModel)]="evalsReq.courseId" (change)="onCourseChange()">
+                    <ng-container *ngFor="let courses of coursess.coursess; index as dayIdx">
+                    <option value="{{course.courseId}}" *ngFor="let course of courses; index as courseIdx">{{course.title}}</option>
+                    </ng-container>
+                </select>
+            </td>
+        </tr>
+    </table>
+
+
+    <!-- TAB 01 -->
+    <!-- <div class="tab_navi mt_20" *ngIf="education.authType === 'P'">
+        <ul class="tab01">
+            <ng-container *ngFor="let courses of coursess.coursess; index as dayIdx">
+            <li *ngFor="let course of courses; index as courseIdx"><a [ngClass]="course.courseId === selCourse.courseId ? 'active' : ''" (click)="onTabClick(dayIdx, courseIdx)">{{course.day}}일차 {{course.type}}</a></li>
+            </ng-container>
+        </ul>
+    </div> -->
+    <div class="tab01_container">
+        <div id="tab1" class="tab_cont bg_01 font_13" style="display: block;">
+
+            <!-- Table View -->
+            <table class="tb_view01 mt_10" *ngIf="education.authType === 'P'">
+                <colgroup>
+                    <col style="width:180px" />
+                    <col style="width:*" />
+                    <col style="width:180px" />
+                    <col style="width:*" />
+                </colgroup>
+                
+                <tr>
+                    <th>강의 제목</th>
+                    <td colspan="3">{{selCourse.title}}</td>
+                </tr>
+                <tr>
+                    <th>참여 인원</th>
+                    <td>{{selCourse.attendCnt}}명 <a class="button02 bg_03" id="pop_list01" (click)="onAttendListClick()">상세</a></td>
+                    <th>강사명</th>
+                    <td>{{selCourse.teacher}}</td>
+                </tr>
+                <tr>
+                    <th>교육 시간</th>
+                    <td>{{selCourse.startHour}}:{{selCourse.startMinute}} ~ {{selCourse.endHour}}:{{selCourse.endMinute}}</td>
+                    <th>강의실</th>
+                    <td>{{selCourse.room}}</td>
+                </tr>
+                <tr>
+                    <th>교육 평점</th>
+                    <td colspan="3">
+                        <span class="mr_20">
+                            <img src="/assets/images/ico_star_{{evalStarAvg > 0 ? 'on' : 'off'}}.png" alt="star on" />
+                            <img src="/assets/images/ico_star_{{evalStarAvg > 1 ? 'on' : 'off'}}.png" alt="star on" />
+                            <img src="/assets/images/ico_star_{{evalStarAvg > 2 ? 'on' : 'off'}}.png" alt="star on" />
+                            <img src="/assets/images/ico_star_{{evalStarAvg > 3 ? 'on' : 'off'}}.png" alt="star on" />
+                            <img src="/assets/images/ico_star_{{evalStarAvg > 4 ? 'on' : 'off'}}.png" alt="star off" />
+                        </span>
+                        <span class="mr_20"><strong>{{evalStarAvg}}</strong>/5점</span>
+                        <span class="mr_20">{{evalCnt | number}}명 참여</span>
+                    </td>
+                </tr>
+            </table>
+
+            <h3 class="mt_30">교육 후기</h3>
+            <div class="review" *ngFor="let eval of evals">
+                <h4 class="f_l mb_10">작성자 : {{eval.memberName}}</h4>
+                <div class="f_r">
+                    <span class="mr_20">
+                        <img src="/assets/images/ico_star_{{eval.evalStar > 0 ? 'on' : 'off'}}.png" alt="star on" />
+                        <img src="/assets/images/ico_star_{{eval.evalStar > 1 ? 'on' : 'off'}}.png" alt="star on" />
+                        <img src="/assets/images/ico_star_{{eval.evalStar > 2 ? 'on' : 'off'}}.png" alt="star on" />
+                        <img src="/assets/images/ico_star_{{eval.evalStar > 3 ? 'on' : 'off'}}.png" alt="star on" />
+                        <img src="/assets/images/ico_star_{{eval.evalStar > 4 ? 'on' : 'off'}}.png" alt="star off" />
+                    </span>
+                    <span><strong>{{eval.evalStar}}</strong>/5점</span>
+                </div>
+                <div class="clear comm_box">
+                    {{eval.evalBody}}
+                </div>
+            </div>
+
+            <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+
+        </div>
+        <!-- <div id="tab2" class="tab_cont bg_03 font_13" style="display:none">
+            강의 2
+        </div>
+        <div id="tab2" class="tab_cont bg_03 font_13" style="display:none">
+            강의 3
+        </div>
+        <div id="tab2" class="tab_cont bg_03 font_13" style="display:none">
+            강의 4
+        </div> -->
+    </div>
+    <!--// TAB 01 -->
+
+</div>
+<!-- Right Wrap -->
+
+<!-- popup -->
+<div id="ist01_popup" class="popup_wrap">
+    <div class="popup_head">
+        <h2>{{education.authType === 'P' ? '참여' : education.authType === 'A' ? '이수' : education.authType}} 회원</h2>
+        <a id="close" (click)="onClosePopupClick()"><img src="/assets/images/ico_close.png"></a>
+    </div>
+    <div class="popup_contents">
+        <form #approvalsForm="ngForm" (ngSubmit)="onSubmitApprovalsSearch()">
+        <p class="text_c">
+            <input type="text" placeholder="이름을 입력 해주세요." class="Width-70" name="keyword" [(ngModel)]="approvalsReq.keyword" />
+            <button type="submit" class="button02 bg_04" [disabled]="!approvalsForm.form.valid">검색</button>
+        </p>
+        </form>
+        <!-- Table list -->
+        <table class="tb_list01 mt_30">
+            <colgroup>
+                <col style="width:80px" />
+                <col style="width:20%" />
+                <col style="width:*" />
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>회원이름</th>
+                    <th>출결시간</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngIf="approvals === undefined">
+                    <td colspan="3">검색된 회원이 없습니다.</td>
+                </tr>
+                <tr *ngFor="let approval of approvals; index as idx">
+                    <td>{{(approvalsReq.page-1) * approvalsReq.cntPerPage + idx+1}}</td>
+                    <td>{{approval.memberName}}</td>
+                    <td>
+                        <p>출석 {{approval.startDt | date : 'yyyy.MM.dd HH.mm'}}</p>
+                        <p>종료 {{approval.endDt | date : 'yyyy.MM.dd HH.mm'}}</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <widget-pagination #approvalPagination (onPage)="onApprovalPageClick($event)"></widget-pagination>
+        <!--// Table list -->
+    </div>
+</div>
+
+<div id="fade" class="black_overlay"></div>
+<!--// popup -->

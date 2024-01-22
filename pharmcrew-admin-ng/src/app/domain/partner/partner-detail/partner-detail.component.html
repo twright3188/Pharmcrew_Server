@@ -1,0 +1,80 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">파트너서비스 {{partner.partnerId === undefined ? '등록' : '수정'}}</h1>
+        <div class="f_r mt_20">Home > 광고 관리 > 파트너서비스 관리 > <span class="fw_600">{{partner.partnerId === undefined ? '등록' : '수정'}}</span></div>
+    </div>
+
+
+    <div class="clear_wrap mt_10">
+        <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+    </div>
+    <!-- Table View -->
+    <table class="tb_view01 mt_10">
+        <colgroup>
+            <col style="width:150px" />
+            <col style="width:*" />
+            <col style="width:150px" />
+            <col style="width:*" />
+        </colgroup>
+        <tr *ngIf="partner.partnerId !== undefined">
+            <th>등록인</th>
+            <td>{{partner.regName}}</td>
+            <th>등록일</th>
+            <td>{{partner.regDt | date: 'yyyy.MM.dd'}}</td>
+        </tr>
+        <tr *ngIf="partner.partnerId !== undefined">
+            <th>이용자 수</th>
+            <td colspan="3">{{partner.memberCount}}</td>
+        </tr>
+        <tr>
+            <th>노출 여부</th>
+            <td colspan="3">
+                <input type="radio" name="isOpen" value="Y" [(ngModel)]="partner.isOpen" /> 노출
+                <input type="radio" name="isOpen" value="N" [(ngModel)]="partner.isOpen" class="ml_10"/> 비노출
+            </td>
+        </tr>
+        <tr>
+            <th>제목<span class="tb_star">*</span></th>
+            <td colspan="3"><input type="text" placeholder="제목을 입력하세요" class="Width-100" [(ngModel)]="partner.name" />
+            </td>
+        </tr>
+        <tr>
+            <th>설명<span class="tb_star">*</span></th>
+            <td colspan="3"><input type="text" placeholder="설명을 입력하세요" class="Width-100" [(ngModel)]="partner.detail" />
+            </td>
+        </tr>
+        <tr>
+            <th>파트너서비스 아이콘<span class="tb_star">*</span><br/>(100px X 100px)</th>
+            <td colspan="3">
+                <!-- <p>
+                    <input type="file" class="w_200"/>
+                    <a href="#none" class="button02">파일삭제</a>
+                    <a href="#none" class="button02">첨부파일 확인</a>
+                </p>
+                <p class="font_14 fs_12 mt_10">* png 파일 형식의 10MB 이하 용량의 파일만 등록 가능합니다.</p> -->
+                <widget-file-upload [attachFiles]="imgFile()"
+                    [checkType]='"partner"' [maxCount]="1" [maxSize]="10485760" 
+                    (onView)="onViewAttach($event)"
+                    (onDelete)="onDeleteAttach($event)"></widget-file-upload>
+            </td>
+        </tr>
+        <tr>
+            <th>서비스 연결 경로<span class="tb_star">*</span></th>
+            <td colspan="3">
+                <p><input type="text" placeholder="서비스 연결 경로를 입력하세요" class="Width-100" [(ngModel)]="partner.moveUrl" /></p>
+                <p class="font_14 fs_12 mt_10">* 서비스가 제공되고 있는 경로를 입력 합니다.</p>
+            </td>
+        </tr>
+    </table>
+    <!-- Button -->
+    <div class="btn_wrap text_r mt_20">
+        <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+        <a id="save" class="button01 bg_03" *ngIf="partner.partnerId !== undefined" (click)="onDeleteClick()">삭제</a>
+        <a id="save" class="button01 bg_14" (click)="onSaveClick()">저장</a>
+    </div>
+    <!--// Button -->
+
+</div>
+<!-- Right Wrap -->

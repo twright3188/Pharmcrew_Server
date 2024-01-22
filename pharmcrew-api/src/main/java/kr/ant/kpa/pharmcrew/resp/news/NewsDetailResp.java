@@ -1,0 +1,51 @@
+package kr.ant.kpa.pharmcrew.resp.news;
+
+import com.bumdori.spring.annotation.Description;
+
+import kr.ant.kpa.pharmcrew.resp.PcResp;
+import kr.ant.kpa.pharmcrew.validation.VALIDATION;
+
+import kr.ant.kpa.pharmcrew.resp.news.NewsDetail;
+
+/**
+* 소식방
+* 2.소식방 상세
+ */
+public class NewsDetailResp extends PcResp {
+
+	/**
+	*
+	*/
+	private static final long serialVersionUID = -1;
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	 Member Variable
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	@Description("소식방 상세")
+	private NewsDetail detail;
+
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	 Base Functions 
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	public NewsDetailResp() {
+		super();
+	}
+	public NewsDetailResp(VALIDATION validation) {
+		super(validation);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////
+	//	  Member Functions	
+	////////////////////////////////////////////////////////////////////////////////////////
+
+	public NewsDetail getDetail() {
+		return detail;
+ 	}
+	public void setDetail(NewsDetail detail) {
+		this.detail = detail;
+ 	}
+
+}

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.partners">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<select id="file-select-by-id" resultType="FileVo">
+		select	* from t_file where file_id = #{file_id}
+	</select>
+
+	<select id="admin-select-by-id" resultType="AdminVo">
+		select	* from t_admin where admin_id = #{admin_id}
+	</select>
+	
+	<!-- =============================================================================== -->
+	<!-- 파트너 서비스 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="partners-result-map" type="PartnersVo">
+		<id property="partner_id" column="partner_id" />
+		<association property="iconFile" column="icon_file_id" javaType="FileVo" select="file-select-by-id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+	</resultMap>
+	
+	
+	<sql id="partners-where">
+		<where>
+			<if test="partner_id != null">
+		AND		ORIGIN.partner_id = #{partner_id}
+			</if>
+			<if test="name != null">
+		AND		ORIGIN.name = #{name}
+			</if>
+			<if test="detail != null">
+		AND		ORIGIN.detail = #{detail}
+			</if>
+			<if test="icon_file_id != null">
+		AND		ORIGIN.icon_file_id = #{icon_file_id}
+			</if>
+			<if test="move_url != null">
+		AND		ORIGIN.move_url = #{move_url}
+			</if>
+			<if test="is_open != null">
+		AND		ORIGIN.is_open = #{is_open}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="member_id != null">		<!-- 멤버가 지정한 파트너 서비스 조회 : beksung -->
+		AND		ORIGIN.partner_id IN (SELECT partner_id FROM t_member_partner WHERE member_id = #{member_id})
+		</if>
+		</where>
+	</sql>
+
+	<insert id="partners-insert" parameterType="PartnersVo" useGeneratedKeys="true">
+		INSERT	INTO	t_partners
+				(name, icon_file_id, move_url, reg_id
+		<if test="detail != null">
+				, detail
+		</if>
+		<if test="is_open != null">
+				, is_open
+		</if>
+				, reg_dt)
+		VALUES (#{name}, #{icon_file_id}, #{move_url}, #{reg_id}
+		<if test="detail != null">
+				, #{detail}
+		</if>
+		<if test="is_open != null">
+				, #{is_open}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="partner_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="partners-select" parameterType="Map" resultMap="partners-result-map">
+		SELECT	ORIGIN.*
+		<if test="withMine != null">		<!-- 멤버가 설정한 값을 가져오기 위해 : beksung -->
+			, IFNULL( (SELECT IFNULL('Y', 'N') FROM t_member_partner WHERE partner_id = ORIGIN.partner_id AND member_id = #{withMine}), 'N') as isUsing
+		</if>
+ 		<if test="withMemberCount != null">	<!-- 사용 중인 회원 수 -->
+			,	(select count(member_id) from t_member_partner where partner_id = ORIGIN.partner_id) as memberCount
+		</if>
+			
+		FROM	t_partners	ORIGIN
+
+		<include refid="partners-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="partners-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.partner_id)
+		FROM	t_partners	ORIGIN
+		<include refid="partners-where"/>
+	</select>
+
+	<update id="partners-update" parameterType="PartnersVo">
+		UPDATE	t_partners
+		SET
+				mod_dt = now()
+			<if test="name != null">
+			,	name = #{name}
+			</if>
+			<if test="detail != null">
+			,	detail = #{detail}
+			</if>
+			<if test="move_url != null">
+			,	move_url = #{move_url}
+			</if>
+			<if test="is_open != null">
+			,	is_open = #{is_open}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				partner_id = #{partner_id}
+	</update>
+
+	<delete id="partners-delete" parameterType="PartnersVo">
+		DELETE
+		FROM	t_partners
+		WHERE	partner_id = #{partner_id}
+	</delete>
+
+</mapper>
+

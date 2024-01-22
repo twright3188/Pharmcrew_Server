@@ -1,0 +1,83 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">배너 관리</h1>
+                    <div class="f_r mt_20">Home > 광고 관리 > <span class="fw_600">배너 관리</span></div>
+                </div>
+
+                <!-- Search -->
+                <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+                <div class="search_wrap mt_20">
+                    <div class="search_title"><i class="fa fa-search"></i> Search</div>
+                    <table class="search_tb">
+                        <colgroup>
+                            <col style="width:150px" />
+                            <col style="width:*" />
+                        </colgroup>
+                        <tr>
+                            <th>검색어</th>
+                            <td>
+                                <input type="text" name="keyword" placeholder="검색 조건을 입력 해주세요." class="Width-100" [(ngModel)]="req.keyword" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="search_btn">
+                    <button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button>
+                    <!-- <a [routerLink]="['/banners', -1]" class="f_r bg_14">등록</a> -->
+                    <a (click)="onClickItem(-1)" class="f_r bg_14">등록</a>
+                </div>
+                </form>
+                <!-- Search -->
+
+                <!-- Table list -->
+                <table class="tb_list01 mt_30">
+                    <colgroup>
+                        <col style="width:80px" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                        <col style="width:*" />
+                        <col style="width:30%" />
+                        <col style="width:10%" />
+                        <col style="width:10%" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>노출 여부</th>
+                            <th>노출 순서</th>
+                            <th>제목</th>
+                            <th>노출 기간</th>
+                            <th>등록자</th>
+                            <th>등록일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="banners === undefined">
+                            <td colspan="7">등록(검색)된 배너가 없습니다.</td>
+                        </tr>
+                        <tr *ngFor="let banner of banners; index as idx">
+                            <td>{{banner.bannerId}}</td>
+                            <td>{{banner.isOpen === 'Y' ? '노출' : '비노출'}}</td>
+                            <td>{{banner.idx}}</td>
+                            <!-- <td class="text_l"><a class="line" [routerLink]="['/banners', banner.bannerId]">{{banner.title}}</a></td> -->
+                            <td class="text_l"><a class="line" (click)="onClickItem(banner.bannerId)">{{banner.title}}</a></td>
+                            <!-- <td>{{banner.openStartDate}} {{banner.openStartHour}}시 ~ {{banner.openEndDate}} {{banner.openEndHour}}시</td> -->
+                            <td>{{banner.openStartDate}} ~ {{banner.openEndDate}}</td>
+                            <td>{{banner.regName}}</td>
+                            <td>{{banner.regDt | date: 'yyyy.MM.dd'}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+                <!--// Table list -->
+
+                <!-- Button -->
+                <!-- <div class="btn_wrap text_r mt_20">
+                    <a [routerLink]="['/banners', -1]" class="button01 bg_14">등록</a>
+                </div> -->
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->

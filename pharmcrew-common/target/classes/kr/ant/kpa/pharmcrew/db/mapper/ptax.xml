@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.ptax">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<select id="ptaxqnafile-q-file-select-by-ptaxqna-id" resultType="FileVo">
+		select	ORIGIN.*
+		from	t_file ORIGIN
+		join	t_ptax_qna_file PQF on PQF.file_id = ORIGIN.file_id
+		where	PQF.type_div = 'Q'
+		and		PQF.qna_id = #{qna_id}
+	</select>
+
+	<select id="ptaxqnafile-a-file-select-by-ptaxqna-id" resultType="FileVo">
+		select	ORIGIN.*
+		from	t_file ORIGIN
+		join	t_ptax_qna_file PQF on PQF.file_id = ORIGIN.file_id
+		where	PQF.type_div = 'A'
+		and 	PQF.qna_id = #{qna_id}
+	</select>
+
+	<select id="ptaxqnafile-select-by-notice-id" resultType="FileVo">
+		select	ORIGIN.*
+		from	t_file ORIGIN
+		join	t_ptax_notice_file PNF on PNF.file_id = ORIGIN.file_id
+		where	PNF.notice_id = #{notice_id}
+	</select>
+
+	<select id="file-select-by-id" resultType="FileVo">
+		select	* from t_file where file_id = #{file_id}
+	</select>
+
+	<select id="admin-select-by-id" resultType="AdminVo">
+		select	* from t_admin where admin_id = #{admin_id}
+	</select>
+
+	<select id="member-select-by-id" resultType="MemberVo">
+		select	* from t_member where member_id = #{target_member_id}
+	</select>
+
+	<select id="push-select-by-notice-id" resultType="PushVo">
+		select	ORIGIN.*
+			,	(select count(noti_id) from t_member_noti where push_id = ORIGIN.push_id) as sendCnt
+			,	(select count(noti_id) from t_member_noti where push_id = ORIGIN.push_id and recv_dt is not null) as recvCnt
+		from	t_push ORIGIN
+		where	move_div = 'PT' and move_id = #{notice_id}
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- 팜텍스 1:1 문의 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="ptaxqna-result-map" type="PtaxQnaVo">
+		<id property="qna_id" column="qna_id" />
+		<association property="member" column="member_id" javaType="MemberVo" select="member-select-by-id" />
+		<association property="admin" column="admin_id" javaType="AdminVo" select="admin-select-by-id" />
+		<collection property="qAttachFiles" column="qna_id" javaType="ArrayList" ofType="FileVo" select="ptaxqnafile-q-file-select-by-ptaxqna-id" />
+		<collection property="aAttachFiles" column="qna_id" javaType="ArrayList" ofType="FileVo" select="ptaxqnafile-a-file-select-by-ptaxqna-id" />
+	</resultMap>
+
+	<sql id="ptaxqna-where">
+		<where>
+			<if test="qna_id != null">
+		AND		ORIGIN.qna_id = #{qna_id}
+			</if>
+			<if test="member_id != null">
+		AND		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="pharm_name != null">
+		AND		ORIGIN.pharm_name = #{pharm_name}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="body != null">
+		AND		ORIGIN.body = #{body}
+			</if>
+			<if test="is_answerd != null">
+		AND		ORIGIN.is_answerd = #{is_answerd}
+			</if>
+			<if test="ans_title != null">
+		AND		ORIGIN.ans_title = #{ans_title}
+			</if>
+			<if test="ans_body != null">
+		AND		ORIGIN.ans_body = #{ans_body}
+			</if>
+			<if test="question_dt != null">
+		AND		ORIGIN.question_dt = #{question_dt}
+			</if>
+			<if test="admin_id != null">
+		AND		ORIGIN.admin_id = #{admin_id}
+			</if>
+			<if test="answer_dt != null">
+		AND		ORIGIN.answer_dt = #{answer_dt}
+			</if>
+			<if test="questionDtStartDate != null">
+		and		date(ORIGIN.question_dt) >= date(#{questionDtStartDate})
+			</if>
+			<if test="questionDtEndDate != null">
+		and		date(ORIGIN.question_dt) <![CDATA[<=]]> date(#{questionDtEndDate})
+			</if>
+			<if test="pharmNameIsNull != null and pharmNameIsNull == true">
+		and 	ORIGIN.pharm_name is null
+			</if>
+			<if test="pharmNameKeyword != null">
+		and 	ORIGIN.pharm_name like concat('%', #{pharmNameKeyword}, '%')
+			</if>
+			<if test="keyword != null">
+		and 	ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+		</where>
+	</sql>
+
+	<insert id="ptaxqna-insert" parameterType="PtaxQnaVo" useGeneratedKeys="true">
+		INSERT	INTO	t_ptax_qna
+				(member_id, pharm_name, title, body
+		<if test="is_answerd != null">
+				, is_answerd
+		</if>
+		<if test="ans_title != null">
+				, ans_title
+		</if>
+		<if test="ans_body != null">
+				, ans_body
+		</if>
+		<if test="admin_id != null">
+				, admin_id
+		</if>
+		<if test="answer_dt != null">
+				, answer_dt
+		</if>
+				, question_dt)
+		VALUES (#{member_id}, #{pharm_name}, #{title}, #{body}
+		<if test="is_answerd != null">
+				, #{is_answerd}
+		</if>
+		<if test="ans_title != null">
+				, #{ans_title}
+		</if>
+		<if test="ans_body != null">
+				, #{ans_body}
+		</if>
+		<if test="admin_id != null">
+				, #{admin_id}
+		</if>
+		<if test="answer_dt != null">
+				, #{answer_dt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="qna_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="ptaxqna-select" parameterType="Map" resultMap="ptaxqna-result-map">
+		SELECT	ORIGIN.*
+		FROM	t_ptax_qna	ORIGIN
+
+		<include refid="ptaxqna-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="ptaxqna-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.qna_id)
+		FROM	t_ptax_qna	ORIGIN
+		<include refid="ptaxqna-where"/>
+	</select>
+
+	<update id="ptaxqna-update" parameterType="PtaxQnaVo">
+		UPDATE	t_ptax_qna
+		SET
+				qna_id = #{qna_id}
+			<if test="pharm_name != null">
+			,	pharm_name = #{pharm_name}
+			</if>
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="body != null">
+			,	body = #{body}
+			</if>
+			<if test="is_answerd != null">
+			,	is_answerd = #{is_answerd}
+			</if>
+			<if test="ans_title != null">
+			,	ans_title = #{ans_title}
+			</if>
+			<if test="ans_body != null">
+			,	ans_body = #{ans_body}
+			</if>
+			<if test="question_dt != null">
+			,	question_dt = #{question_dt}
+			</if>
+			<if test="admin_id != null">
+			,	admin_id = #{admin_id}
+			</if>
+			<if test="answer_dt != null">
+			,	answer_dt = #{answer_dt}
+			</if>
+		WHERE
+				qna_id = #{qna_id}
+	</update>
+
+	<delete id="ptaxqna-delete" parameterType="PtaxQnaVo">
+		DELETE
+		FROM	t_ptax_qna
+		WHERE	qna_id = #{qna_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 팜텍스 1:1 문의 답변 첨부 파일 -->
+	<!-- =============================================================================== -->
+
+	<sql id="ptaxqnafile-where">
+		<where>
+			<if test="qna_id != null">
+		AND		ORIGIN.qna_id = #{qna_id}
+			</if>
+			<if test="type_div != null">
+		AND		ORIGIN.type_div = #{type_div}
+			</if>
+			<if test="file_id != null">
+		AND		ORIGIN.file_id = #{file_id}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="ptaxqnafile-insert" parameterType="PtaxQnaFileVo">
+		INSERT	INTO	t_ptax_qna_file
+				(qna_id, type_div, file_id
+				)
+		VALUES (#{qna_id}, #{type_div}, #{file_id}
+				)
+	</insert>
+
+	<select id="ptaxqnafile-select" parameterType="Map" resultType="PtaxQnaFileVo">
+		SELECT	ORIGIN.*
+		FROM	t_ptax_qna_file	ORIGIN
+
+		<include refid="ptaxqnafile-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="ptaxqnafile-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.qna_id)
+		FROM	t_ptax_qna_file	ORIGIN
+		<include refid="ptaxqnafile-where"/>
+	</select>
+
+	<update id="ptaxqnafile-update" parameterType="PtaxQnaFileVo">
+		UPDATE	t_ptax_qna_file
+		SET
+				qna_id = #{qna_id}
+			,	type_div = #{type_div}
+			,	file_id = #{file_id}
+		WHERE
+				qna_id = #{qna_id}
+				AND type_div = #{type_div}
+				AND file_id = #{file_id}
+	</update>
+
+	<delete id="ptaxqnafile-delete" parameterType="PtaxQnaFileVo">
+		DELETE
+		FROM	t_ptax_qna_file
+		WHERE	qna_id = #{qna_id}	AND type_div = #{type_div}	AND file_id = #{file_id}
+	</delete>
+
+	<insert id="ptaxqnafile-insert-list" parameterType="Map">
+		insert	into t_ptax_qna_file
+				(qna_id, type_div, file_id)
+		values
+		<foreach item="fileId" collection="fileIds" separator=",">
+				(#{qna_id}, #{type_div}, #{fileId})
+		</foreach>
+	</insert>
+
+	<delete id="ptaxqnafile-delete-map" parameterType="Map">
+		delete
+		from	t_ptax_qna_file
+		where
+		<if test="notice_id != null">
+				qna_id = #{qna_id}
+		</if>
+		<if test="fileIds != null">
+				file_id in (
+			<foreach item="fileId" collection="fileIds" separator=",">
+					#{fileId}
+			</foreach>
+				)
+		</if>
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 팜택스 공지 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="ptaxnotice-result-map" type="PtaxNoticeVo">
+		<id property="notice_id" column="notice_id" />
+		<association property="member" column="target_member_id" javaType="MemberVo" select="member-select-by-id" />
+		<association property="push" column="notice_id" javaType="PushVo" select="push-select-by-notice-id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+		<collection property="attachFiles" column="notice_id" javaType="ArrayList" ofType="FileVo" select="ptaxqnafile-select-by-notice-id" />
+	</resultMap>
+
+	<sql id="ptaxnotice-where">
+		<where>
+			<if test="notice_id != null">
+		AND		ORIGIN.notice_id = #{notice_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="body != null">
+		AND		ORIGIN.body = #{body}
+			</if>
+			<if test="target_div != null">
+		AND		ORIGIN.target_div = #{target_div}
+			</if>
+			<if test="target_pharm_name != null">
+		AND		ORIGIN.target_pharm_name = #{target_pharm_name}
+			</if>
+			<if test="target_member_id != null">
+		and		ORIGIN.target_member_id = #{target_member_id}
+			</if>
+			<if test="is_open != null">
+		AND		ORIGIN.is_open = #{is_open}
+			</if>
+			<if test="view_cnt != null">
+		AND		ORIGIN.view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="regDtStartDate != null">
+		and		date(ORIGIN.reg_dt) >= date(#{regDtStartDate})
+			</if>
+			<if test="regDtEndDate != null">
+		and		date(ORIGIN.reg_dt) <![CDATA[<=]]> date(#{regDtEndDate})
+			</if>
+			<if test="reservDtIsNotNull != null and reservDtIsNotNull == true">
+		and		P.reserv_dt is not null
+			</if>
+			<if test="reservDtIsNull != null and reservDtIsNull == true">
+		and		P.reserv_dt is null
+			</if>
+			<if test="pushIsNotNull != null and pushIsNotNull == true">
+		and		P.push_id is not null
+			</if>
+			<if test="keyword != null">
+		and		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+		</where>
+	</sql>
+
+	<insert id="ptaxnotice-insert" parameterType="PtaxNoticeVo" useGeneratedKeys="true">
+		INSERT	INTO	t_ptax_notice
+				(title, body, target_div, reg_id
+		<if test="target_pharm_name != null">
+				, target_pharm_name
+		</if>
+		<if test="target_member_id != null">
+				, target_member_id
+		</if>
+		<if test="is_open != null">
+				, is_open
+		</if>
+		<if test="view_cnt != null">
+				, view_cnt
+		</if>
+				, reg_dt)
+		VALUES (#{title}, #{body}, #{target_div}, #{reg_id}
+		<if test="target_pharm_name != null">
+				, #{target_pharm_name}
+		</if>
+		<if test="target_member_id != null">
+				, #{target_member_id}
+		</if>
+		<if test="is_open != null">
+				, #{is_open}
+		</if>
+		<if test="view_cnt != null">
+				, #{view_cnt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="notice_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="ptaxnotice-select" parameterType="Map" resultMap="ptaxnotice-result-map">
+		SELECT	ORIGIN.*
+		<if test="withSRCnt != null and withSRCnt == true">
+			,	(select count(noti_id) from t_member_noti where push_id = P.push_id) as sendCnt
+			,	(select count(noti_id) from t_member_noti where push_id = P.push_id and recv_dt is not null) as recvCnt
+		</if>
+		FROM	t_ptax_notice	ORIGIN
+		<if test="(reservDtIsNotNull != null and reservDtIsNotNull == true) or
+					(reservDtIsNull != null and reservDtIsNull == true) or
+					(pushIsNotNull != null and pushIsNotNull == true) or
+					(withSRCnt != null and withSRCnt == true)">
+		left	join t_push P on P.move_div = 'PT' and P.move_id = ORIGIN.notice_id
+		</if>
+
+		<include refid="ptaxnotice-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="ptaxnotice-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.notice_id)
+		FROM	t_ptax_notice	ORIGIN
+		<include refid="ptaxnotice-where"/>
+	</select>
+
+	<update id="ptaxnotice-update" parameterType="PtaxNoticeVo">
+		UPDATE	t_ptax_notice
+		SET
+		    	mod_dt = now()
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="body != null">
+			,	body = #{body}
+			</if>
+			<if test="target_div != null">
+			,	target_div = #{target_div}
+			</if>
+			<if test="target_pharm_name != null">
+			,	target_pharm_name = #{target_pharm_name}
+			</if>
+			<if test="target_member_id != null">
+			,	target_member_id = #{target_member_id}
+			</if>
+			<if test="is_open != null">
+			,	is_open = #{is_open}
+			</if>
+			<if test="view_cnt != null">
+			,	view_cnt = #{view_cnt}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+			,	mod_id = #{mod_id}
+			</if>
+			<if test="targetPharmNameNull != null and targetPharmNameNull == true">
+			,	target_pharm_name = null
+			</if>
+			<if test="targetMemberIdNull != null and targetMemberIdNull == true">
+			,	target_member_id = null
+			</if>
+		WHERE
+				notice_id = #{notice_id}
+	</update>
+
+	<delete id="ptaxnotice-delete" parameterType="PtaxNoticeVo">
+		DELETE
+		FROM	t_ptax_notice
+		WHERE	notice_id = #{notice_id}
+	</delete>
+
+	<!-- =============================================================================== -->
+	<!-- 팜택스 공지 첨부 파일 -->
+	<!-- =============================================================================== -->
+
+	<sql id="ptaxnoticefile-where">
+		<where>
+			<if test="notice_id != null">
+		AND		ORIGIN.notice_id = #{notice_id}
+			</if>
+			<if test="file_id != null">
+		AND		ORIGIN.file_id = #{file_id}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="ptaxnoticefile-insert" parameterType="PtaxNoticeFileVo">
+		INSERT	INTO	t_ptax_notice_file
+				(notice_id, file_id
+				)
+		VALUES (#{notice_id}, #{file_id}
+				)
+	</insert>
+
+	<select id="ptaxnoticefile-select" parameterType="Map" resultType="PtaxNoticeFileVo">
+		SELECT	ORIGIN.*
+		FROM	t_ptax_notice_file	ORIGIN
+
+		<include refid="ptaxnoticefile-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="ptaxnoticefile-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.notice_id)
+		FROM	t_ptax_notice_file	ORIGIN
+		<include refid="ptaxnoticefile-where"/>
+	</select>
+
+	<update id="ptaxnoticefile-update" parameterType="PtaxNoticeFileVo">
+		UPDATE	t_ptax_notice_file
+		SET
+				notice_id = #{notice_id}
+			,	file_id = #{file_id}
+		WHERE
+				notice_id = #{notice_id}
+				AND file_id = #{file_id}
+	</update>
+
+	<delete id="ptaxnoticefile-delete" parameterType="PtaxNoticeFileVo">
+		DELETE
+		FROM	t_ptax_notice_file
+		WHERE	notice_id = #{notice_id}	AND file_id = #{file_id}
+	</delete>
+
+	<insert id="ptaxnoticefile-insert-list" parameterType="Map">
+		insert	into t_ptax_notice_file
+				(notice_id, file_id)
+		values
+		<foreach item="fileId" collection="fileIds" separator=",">
+				(#{notice_id}, #{fileId})
+		</foreach>
+	</insert>
+
+	<delete id="ptaxnoticefile-delete-map" parameterType="Map">
+		delete
+		from	t_ptax_notice_file
+		where
+		<if test="notice_id != null">
+				notice_id = #{notice_id}
+		</if>
+		<if test="fileIds != null">
+				file_id in (
+			<foreach item="fileId" collection="fileIds" separator=",">
+					#{fileId}
+			</foreach>
+				)
+		</if>
+	</delete>
+
+</mapper>
+

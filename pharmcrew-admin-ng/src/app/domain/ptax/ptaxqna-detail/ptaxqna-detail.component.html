@@ -1,0 +1,100 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">1:1문의 답변</h1>
+        <div class="f_r mt_20">Home > 팜텍스 서비스 관리 > 1:1문의 관리 > <span class="fw_600">답변</span></div>
+    </div>
+
+    <!-- Table View -->
+    <table class="tb_view01 mt_10">
+        <colgroup>
+            <col style="width:180px" />
+            <col style="width:*" />
+            <col style="width:180px" />
+            <col style="width:*" />
+        </colgroup>
+        <tr>
+            <th>팜텍스회원</th>
+            <td>{{qna.pharmName}}</td>
+            <th>문의고객</th>
+            <td>{{qna.memberName}}</td>
+        </tr>
+        <tr>
+            <th>답변 상태</th>
+            <td>{{qna.isAnswered === 'Y' ? '완료' : qna.isAnswered === 'N' ? '대기' : qna.isAnswered}}</td>
+            <th>접수 일시</th>
+            <td>{{qna.questionDt | date: 'yyyy.MM.dd HH:mm'}}</td>
+        </tr>
+        <tr>
+            <th>제목</th>
+            <td colspan="3">{{qna.title}}</td>
+        </tr>
+        <tr>
+            <th>내용</th>
+            <td colspan="3">{{qna.body}}<br/></td>
+        </tr>
+        <tr *ngIf="qna.qAttachFiles !== undefined">
+            <th>첨부파일</th>
+            <td colspan="3"><a href="{{file.url}}" target="_blank" class="line" *ngFor="let file of qna.qAttachFiles">{{file.orgName}}</a></td>
+        </tr>
+    </table>
+    
+    <div class="mt_20">
+        <h3 class="f_l ">고객문의 답변 <span class="ml_10 font_14 fw_600" *ngIf="qna.isAnswered === 'Y'">답변완료</span></h3>
+        <div class="f_r "><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+    </div>
+    
+    <!-- Table View -->
+    <table class="tb_view01 mt_10">
+        <colgroup>
+            <col style="width:180px" />
+            <col style="width:*" />
+            <col style="width:180px" />
+            <col style="width:*" />
+        </colgroup>
+        <tr *ngIf="qna.isAnswered === 'Y' && modify === false">
+            <th>답변자</th>
+            <td>{{qna.adminName}}</td>
+            <th>답변일</th>
+            <td>{{qna.answerDt | date: 'yyyy.MM.dd HH:mm'}}</td>
+        </tr>
+        <tr>
+            <th>답변 제목<span class="tb_star">*</span></th>
+            <td colspan="3" *ngIf="qna.isAnswered === 'N' || modify === true"><input type="text" placeholder="제목을 입력하세요" class="Width-100 " name="ansTitle" [maxLength]="50" [(ngModel)]="qna.ansTitle" /></td>
+            <td colspan="3" *ngIf="qna.isAnswered === 'Y' && modify === false">{{qna.ansTitle}}</td>
+        </tr>
+        <tr>
+            <th>답변 내용<span class="tb_star">*</span></th>
+            <td colspan="3" *ngIf="qna.isAnswered === 'N' || modify === true">
+                <textarea class="Width-100" rows="6" name="ansBody" [maxLength]="200" [(ngModel)]="qna.ansBody">
+                </textarea>
+            </td>
+            <td colspan="3" *ngIf="qna.isAnswered === 'Y' && modify === false">{{qna.ansBody}}</td>
+        </tr>
+        <tr *ngIf="(qna.isAnswered === 'N' || modify === true) || (qna.isAnswered === 'Y' && modify === false && qna.aAttachFiles !== undefined)">
+            <th>첨부파일</th>
+            <td colspan="3" *ngIf="qna.isAnswered === 'N' || modify === true">
+                <widget-file-upload [attachFiles]="qna.aAttachFiles"
+                    [checkType]='"ptaxqna"' [maxCount]="3" [maxSize]="10485760"
+                    (onView)="onViewAttach($event)"
+                    (onDelete)="onDeleteAttach($event)"></widget-file-upload>
+            </td>
+            <td colspan="3" *ngIf="qna.isAnswered === 'Y' && modify === false">
+                <a href="{{file.url}}" target="_blank" class="line" *ngFor="let file of qna.aAttachFiles">{{file.orgName}}</a>
+            </td>
+        </tr>
+    </table>
+    
+     <!-- Button -->
+    <div class="btn_wrap text_r mt_20">
+        <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+        <a id="save" class="button01 bg_14" (click)="onSaveClick()" *ngIf="qna.isAnswered === 'N' || modify === true">저장</a>
+        <a id="save" class="button01 bg_14" (click)="onModifyClick()" *ngIf="qna.isAnswered === 'Y' && modify === false">수정</a>
+    </div>
+    <!--// Button -->
+
+
+
+</div>
+<!-- Right Wrap -->

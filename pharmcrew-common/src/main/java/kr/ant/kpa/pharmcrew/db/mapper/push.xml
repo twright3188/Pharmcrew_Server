@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.ant.kpa.pharmcrew.db.push">
+
+	<sql id="paging">
+		<if test="limit != null">
+			limit
+			<if test="start != null">
+				 #{start},
+			</if>
+			#{limit}
+		</if>
+	</sql>
+
+	<select id="file-select-by-id" resultType="FileVo">
+		select	* from t_file where file_id = #{file_id}
+	</select>
+
+	<select id="admin-select-by-id" resultType="AdminVo">
+		select	* from t_admin where admin_id = #{admin_id}
+	</select>
+
+	<!-- =============================================================================== -->
+	<!-- 푸시 -->
+	<!-- =============================================================================== -->
+
+	<resultMap id="push-result-map" type="PushVo">
+		<id property="push_id" column="push_id" />
+		<association property="imgFile" column="img_file_id" javaType="FileVo" select="file-select-by-id" />
+		<association property="regAdmin" column="reg_id" javaType="AdminVo" select="admin-select-by-id" />
+	</resultMap>
+
+	<sql id="push-where">
+		<where>
+			<if test="push_id != null">
+		AND		ORIGIN.push_id = #{push_id}
+			</if>
+			<if test="title != null">
+		AND		ORIGIN.title = #{title}
+			</if>
+			<if test="body != null">
+		AND		ORIGIN.body = #{body}
+			</if>
+			<if test="img_file_id != null">
+		AND		ORIGIN.img_file_id = #{img_file_id}
+			</if>
+			<if test="os_div != null">
+		AND		ORIGIN.os_div = #{os_div}
+			</if>
+			<if test="organize_id != null">
+		AND		ORIGIN.organize_id = #{organize_id}
+			</if>
+			<!--<if test="public_yn != null">
+		AND		ORIGIN.public_yn = #{public_yn}
+			</if>-->
+			<if test="category_div != null">
+		AND		ORIGIN.category_div = #{category_div}
+			</if>
+			<if test="move_div != null">
+		AND		ORIGIN.move_div = #{move_div}
+			</if>
+			<if test="move_id != null">
+		AND		ORIGIN.move_id = #{move_id}
+			</if>
+			<if test="move_url != null">
+		AND		ORIGIN.move_url = #{move_url}
+			</if>
+			<if test="state_div != null">
+		AND		ORIGIN.state_div = #{state_div}
+			</if>
+			<if test="reserv_dt != null">
+		AND		ORIGIN.reserv_dt = #{reserv_dt}
+			</if>
+			<if test="sended_dt != null">
+		AND		ORIGIN.sended_dt = #{sended_dt}
+			</if>
+			<if test="reg_id != null">
+		AND		ORIGIN.reg_id = #{reg_id}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+			<if test="mod_id != null">
+		AND		ORIGIN.mod_id = #{mod_id}
+			</if>
+			<if test="mod_dt != null">
+		AND		ORIGIN.mod_dt = #{mod_dt}
+			</if>
+			<if test="regDtStartDate != null">
+		and		date(ORIGIN.reg_dt) >= date(#{regDtStartDate})
+			</if>
+			<if test="regDtEndDate != null">
+		and		date(ORIGIN.reg_dt) <![CDATA[<=]]> date(#{regDtEndDate})
+			</if>
+			<if test="reservDtStartDate != null">
+		and		date(ORIGIN.reserv_dt) >= date(#{reservDtStartDate})
+			</if>
+			<if test="reservDtEndDate != null">
+		and		date(ORIGIN.reserv_dt) <![CDATA[<=]]> date(#{reservDtEndDate})
+			</if>
+			<if test="pathDownOrganizeId != null">
+		and		find_in_set(ORIGIN.organize_id,	(
+					select	group_concat(organize_id)
+					from	t_organize
+					where	organize_d1_id = #{pathDownOrganizeId}
+					or		organize_d2_id = #{pathDownOrganizeId}
+					or		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+			</if>
+			<if test="keyword != null">
+		and		ORIGIN.title like concat('%', #{keyword}, '%')
+			</if>
+			<if test="reservDtIsNotNull != null and reservDtIsNotNull == true">
+		and		ORIGIN.reserv_dt is not null
+			</if>
+			<if test="reservDtIsNull != null and reservDtIsNull == true">
+		and		ORIGIN.reserv_dt is null
+			</if>
+			<if test="timeToSend != null and timeToSend == true">
+		and 	(ORIGIN.reserv_dt <![CDATA[<=]]> now()
+			or	ORIGIN.reserv_dt is null)
+			</if>
+		</where>
+	</sql>
+
+	<insert id="push-insert" parameterType="PushVo" useGeneratedKeys="true">
+		INSERT	INTO	t_push
+				(title, body, category_div, reg_id
+		<if test="img_file_id != null">
+				, img_file_id
+		</if>
+		<if test="os_div != null">
+				, os_div
+		</if>
+		<if test="organize_id != null">
+				, organize_id
+		</if>
+		<!--<if test="public_yn != null">
+				, public_yn
+		</if>-->
+		<if test="move_div != null">
+				, move_div
+		</if>
+		<if test="move_id != null">
+				, move_id
+		</if>
+		<if test="move_url != null">
+				, move_url
+		</if>
+		<if test="state_div != null">
+				, state_div
+		</if>
+		<if test="reserv_dt != null">
+				, reserv_dt
+		</if>
+		<if test="sended_dt != null">
+				, sended_dt
+		</if>
+				, reg_dt)
+		VALUES (#{title}, #{body}, #{category_div}, #{reg_id}
+		<if test="img_file_id != null">
+				, #{img_file_id}
+		</if>
+		<if test="os_div != null">
+				, #{os_div}
+		</if>
+		<if test="organize_id != null">
+				, #{organize_id}
+		</if>
+		<!--<if test="public_yn != null">
+				, #{public_yn}
+		</if>-->
+		<if test="move_div != null">
+				, #{move_div}
+		</if>
+		<if test="move_id != null">
+				, #{move_id}
+		</if>
+		<if test="move_url != null">
+				, #{move_url}
+		</if>
+		<if test="state_div != null">
+				, #{state_div}
+		</if>
+		<if test="reserv_dt != null">
+				, #{reserv_dt}
+		</if>
+		<if test="sended_dt != null">
+				, #{sended_dt}
+		</if>
+				, now())
+		<selectKey resultType="Long" order="AFTER" keyProperty="push_id">
+		SELECT	last_insert_id()
+		</selectKey>
+	</insert>
+
+	<select id="push-select" parameterType="Map" resultMap="push-result-map">
+		SELECT	ORIGIN.*
+		<if test="withSRCnt != null and withSRCnt == true">
+			,	(select count(noti_id) from t_member_noti where push_id = ORIGIN.push_id) as sendCnt
+			,	(select count(noti_id) from t_member_noti where push_id = ORIGIN.push_id and recv_dt is not null) as recvCnt
+		</if>
+		FROM	t_push	ORIGIN
+
+		<include refid="push-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="push-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.push_id)
+		FROM	t_push	ORIGIN
+		<include refid="push-where"/>
+	</select>
+
+	<update id="push-update" parameterType="PushVo">
+		UPDATE	t_push
+		SET
+				mod_dt = now()
+			<if test="title != null">
+			,	title = #{title}
+			</if>
+			<if test="body != null">
+			,	body = #{body}
+			</if>
+			<if test="os_div != null">
+			,	os_div = #{os_div}
+			</if>
+			<!--<if test="public_yn != null">
+			,	public_yn = #{public_yn}
+			</if>-->
+			<if test="category_div != null">
+			,	category_div = #{category_div}
+			</if>
+			<if test="move_div != null">
+			,	move_div = #{move_div}
+			</if>
+			<if test="move_id != null">
+			,	move_id = #{move_id}
+			</if>
+			<if test="move_url != null">
+			,	move_url = #{move_url}
+			</if>
+			<if test="state_div != null">
+			,	state_div = #{state_div}
+			</if>
+			<if test="reserv_dt != null">
+			,	reserv_dt = #{reserv_dt}
+			</if>
+			<if test="reservDtNull != null and reservDtNull == true">
+			,	reserv_dt = null
+			</if>
+			<if test="sended_dt != null">
+			,	sended_dt = #{sended_dt}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+			<if test="sendedDtNow != null and sendedDtNow == true">
+			,	sended_dt = now()
+			</if>
+		WHERE
+				push_id = #{push_id}
+	</update>
+
+	<delete id="push-delete" parameterType="PushVo">
+		DELETE
+		FROM	t_push
+		WHERE	push_id = #{push_id}
+	</delete>
+
+	<update id="push-update-map" parameterType="Map">
+		update	t_push
+		set 	state_div = #{state_div}
+		<if test="state_div == 'S'">
+				sended_dt = now()
+		</if>
+		where
+		<if test="pushIds != null">
+				push_id in (
+			<foreach item="pushId" collection="pushIds" separator=",">
+					#{pushId}
+			</foreach>
+				)
+		</if>
+	</update>
+
+	<!-- =============================================================================== -->
+	<!-- 푸시 토큰 -->
+	<!-- =============================================================================== -->
+
+	<sql id="pushtoken-where">
+		<where>
+			<if test="user_div != null">
+		AND		ORIGIN.user_div = #{user_div}
+			</if>
+			<if test="user_id != null">
+		AND		ORIGIN.user_id = #{user_id}
+			</if>
+			<if test="token != null">
+		AND		ORIGIN.token = #{token}
+			</if>
+			<if test="os_div != null">
+		AND		ORIGIN.os_div = #{os_div}
+			</if>
+			<if test="reg_dt != null">
+		AND		ORIGIN.reg_dt = #{reg_dt}
+			</if>
+		</where>
+	</sql>
+
+	<insert id="pushtoken-insert" parameterType="PushTokenVo">
+		INSERT	INTO	t_push_token
+				(token, os_div
+		<if test="user_div != null">
+				, user_div
+		</if>
+		<if test="user_id != null">
+				, user_id
+		</if>
+				, reg_dt)
+		VALUES (#{token}, #{os_div}
+		<if test="user_div != null">
+				, #{user_div}
+		</if>
+		<if test="user_id != null">
+				, #{user_id}
+		</if>
+				, now())
+	</insert>
+
+	<select id="pushtoken-select" parameterType="Map" resultType="PushTokenVo">
+		SELECT	ORIGIN.*
+		FROM	t_push_token	ORIGIN
+
+		<include refid="pushtoken-where"/>
+
+		<if test="orderby != null">
+		ORDER	BY ${orderby}
+		</if>
+
+		<include refid="paging"/>
+	</select>
+
+	<select id="pushtoken-count" parameterType="Map" resultType="Integer">
+		SELECT	count(ORIGIN.user_div)
+		FROM	t_push_token	ORIGIN
+		<include refid="pushtoken-where"/>
+	</select>
+
+	<update id="pushtoken-update" parameterType="PushTokenVo">
+		UPDATE	t_push_token
+		SET
+				user_div = #{user_div}
+			,	user_id = #{user_id}
+			<if test="os_div != null">
+			,	os_div = #{os_div}
+			</if>
+			<if test="reg_dt != null">
+			,	reg_dt = #{reg_dt}
+			</if>
+		WHERE
+				token = #{token}
+	</update>
+
+	<delete id="pushtoken-delete" parameterType="PushTokenVo">
+		DELETE
+		FROM	t_push_token
+		WHERE	user_div = #{user_div}	AND user_id = #{user_id}	AND token = #{token}
+	</delete>
+
+	<select id="pushtoken-select-member-id" parameterType="Map" resultType="Long">
+		select	ORIGIN.user_id
+		from	t_push_token ORIGIN
+		<if test="user_div = 'M' || pharm_name != null">
+		left	join t_member M on M.member_id = ORIGIN.user_id and ORIGIN.user_div = 'M'
+		</if>
+		<where>
+			<if test="user_div != nulll">
+				ORIGIN.user_div = #{user_div}
+			</if>
+			<if test="member_id != null">
+		and		ORIGIN.member_id = #{member_id}
+			</if>
+			<if test="os_div != null">
+		and 	ORIGIN.os_div = #{os_div}
+			</if>
+			<if test="pathDownOrganizeId != null">
+		and
+				<choose>
+					<when test="user_div != null and user_div = 'M'">
+				find_in_set(M.organize_1_id,	(
+												select	group_concat(organize_id)
+												from	t_organize
+												where	organize_d1_id = #{pathDownOrganizeId}
+												or 		organize_d2_id = #{pathDownOrganizeId}
+												or 		organize_d3_id = #{pathDownOrganizeId}
+												)
+				)
+					</when>
+				</choose>
+			</if>
+			<if test="push_yn != null">
+		and
+				<choose>
+					<when test="user_div != null and user_div = 'M'">
+				M.push_yn = #{push_yn}
+					</when>
+				</choose>
+			</if>
+			<if test="ad_push_yn != null">
+		and
+				<choose>
+					<when test="user_div != null and user_div = 'M'">
+			 	M.ad_push_yn = #{ad_push_yn}
+					</when>
+				</choose>
+			</if>
+			<if test="ptax_yn != null">
+		and		M.ptax_yn = #{ptax_yn}
+			</if>
+			<if test="pharm_name != null">
+		and		M.pharm_name = #{pharm_name}
+			</if>
+		</where>
+	</select>
+
+	<select id="pushtoken-select-token" parameterType="Map" resultType="String">
+		select	ORIGIN.token
+		from	t_push_token ORIGIN
+		<where>
+			<if test="user_div != nulll">
+			ORIGIN.user_div = #{user_div}
+			</if>
+			<if test="os_div != null">
+		and 	ORIGIN.os_div = #{os_div}
+			</if>
+			<if test="userIds != null">
+		and 	user_id in (
+				<foreach item="userId" collection="userIds" separator=",">
+					#{userId}
+				</foreach>
+				)
+			</if>
+		</where>
+	</select>
+
+	<delete id="pushtoken-delete-map" parameterType="Map">
+		delete
+		from	t_push_token
+		where
+		<if test="tokens != null">
+				token in (
+			<foreach item="token" collection="tokens" separator=",">
+					#{token}
+			</foreach>
+				)
+		</if>
+	</delete>
+
+</mapper>
+

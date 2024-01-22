@@ -1,0 +1,78 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">팜크루회원 관리</h1>
+                    <div class="f_r mt_20">Home > 회원 관리 > <span class="fw_600">팜크루회원 관리</span></div>
+                </div>
+
+                <!-- Search -->
+                <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+                <div class="search_wrap mt_20">
+                    <div class="search_title"><i class="fa fa-search"></i> Search</div>
+                    <table class="search_tb">
+                        <colgroup>
+                            <col style="width:150px" />
+                            <col style="width:*" />
+                        </colgroup>
+                        <tr>
+                            <th>지부/분회 선택</th>
+                            <widget-organize-selector #organizeSelector></widget-organize-selector>
+                        </tr>
+                        <tr>
+                            <th>검색어</th>
+                            <td>
+                                <input type="text" name="keyword" placeholder="검색 조건을 입력 해주세요." class="Width-60" [(ngModel)]="req.keyword" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="search_btn"><button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button></div>
+                </form>
+                <!-- Search -->
+
+                <!-- Table list -->
+                <table class="tb_list01 mt_30">
+                    <colgroup>
+                        <col style="width:80px" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>조직</th>
+                            <th>이름</th>
+                            <th>먼허번호</th>
+                            <th>생년월일</th>
+                            <th>휴대전화번호</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngIf="members === undefined">
+                            <td colspan="8">검색결과가 없습니다.</td>
+                        </tr>
+                        <tr *ngFor="let member of members; index as idx">
+                            <td>{{member.memberId}}</td>
+                            <td>
+                                {{member.organize1 === undefined ? '' : member.organize1.names.toString().split(',').join(' > ')}}<br>
+                                {{member.organize2 === undefined ? '' : member.organize2.names.toString().split(',').join(' > ')}}
+                            </td>
+                            <!-- <td class="text_l"><a class="line" [routerLink]="['/members', member.memberId]">{{member.name}}</a></td> -->
+                            <td class="text_l"><a class="line" (click)="onClickItem(member.memberId)">{{member.name}}</a></td>
+                            <td>{{member.licenseNo}}</td>
+                            <td>{{member.birthday}}</td>
+                            <td>{{member.phone}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+                <!--// Table list -->
+
+                
+
+            </div>
+            <!-- Right Wrap -->

@@ -1,0 +1,94 @@
+<!-- Right Wrap -->
+<div class="container">
+
+    <div class="clear_wrap">
+        <h1 class="f_l">{{req.type === 'N' ? '공지사항' : req.type === 'E' ? '교육' : req.type === 'OTHER' ? '고객' : req.type}} 문의 관리</h1>
+        <div class="f_r mt_20">Home > {{req.type === 'N' ? '공지사항' : req.type === 'E' ? '교육' : req.type === 'OTHER' ? '고객서비스' : req.type}} 관리 > <span class="fw_600">{{req.type === 'N' ? '공지사항' : req.type === 'E' ? '교육' : req.type === 'OTHER' ? '고객' : req.type}} 문의 관리</span></div>
+    </div>
+
+    <!-- Search -->
+    <form #searchForm="ngForm" (ngSubmit)="onSubmitSearch()">
+    <div class="search_wrap mt_20">
+        <div class="search_title"><i class="fa fa-search"></i> Search</div>
+        <table class="search_tb">
+            <colgroup>
+                <col style="width:150px" />
+                <col style="width:*" />
+                <col style="width:150px" />
+                <col style="width:*" />
+            </colgroup>
+            <tr>
+                <th>약사회 선택</th>
+                <td>
+                    <widget-organize-selector #organizeSelector></widget-organize-selector>
+                </td>
+            </tr>
+            <tr>
+                <th>답변 상태</th>
+                <td colspan="3">
+                    <input type="radio" name="isAnswerd" value="ALL" [(ngModel)]="req.isAnswerd" /> 전체
+                    <input type="radio" class="ml_10" name="isAnswerd" value="Y" [(ngModel)]="req.isAnswerd" /> 답변완료
+                    <input type="radio" class="ml_10" name="isAnswerd" value="N" [(ngModel)]="req.isAnswerd" /> 답변대기
+                </td>
+            </tr>
+            <tr>
+                <th>검색어</th>
+                <td colspan="3">
+                    <!-- <select>
+                        <option>전체</option>
+                    </select> -->
+                    <input type="text" placeholder="검색 조건을 입력 해주세요." class="Width-70" name="keyword" [(ngModel)]="req.keyword" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="search_btn"><button type="submit" class="bg_15" [disabled]="!searchForm.form.valid">Search</button></div>
+    </form>
+    <!-- Search -->
+
+    <!-- Table list -->
+    <table class="tb_list01 mt_30">
+        <colgroup>
+            <col style="width:80px" />
+            <col style="width:10%" />
+            <col style="width:*" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+            <col style="width:10%" />
+        </colgroup>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>약사회 구분</th>
+                <th>제목</th>
+                <th>문의고객</th>
+                <th>답변상태</th>
+                <th>접수일</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngIf="qnas === undefined">
+                <td colspan="6">접수(검색)된 문의가 없습니다.</td>
+            </tr>
+            <tr *ngFor="let qna of qnas; index as idx">
+                <td>{{qna.qnaId}}</td>
+                <td>{{qna.organize === undefined ? '전체' : qna.organize.names.toString().split(',').join(' > ')}}</td>
+                <td class="text_l">
+                    <!-- <a class="line" [routerLink]="['/ntcqnas', qna.qnaId]" *ngIf="req.type === 'N'">{{qna.title}}</a>
+                    <a class="line" [routerLink]="['/eduqnas', qna.qnaId]" *ngIf="req.type === 'E'">{{qna.title}}</a>
+                    <a class="line" [routerLink]="['/qnas', qna.qnaId]" *ngIf="req.type === 'OTHER'">{{qna.title}}</a> -->
+                    <a class="line" (click)="onClickItem(qna.qnaId)">{{qna.title}}</a>
+                </td>
+                <td>{{qna.memberName}}</td>
+                <td>{{qna.isAnswerd === 'Y' ? '완료' : qna.isAnswerd === 'N' ? '대기' : qna.isAnswerd}}</td>
+                <td>{{qna.questionDt | date: 'yyyy.MM.dd HH:mm'}}</td>
+            </tr>
+        </tbody>
+    </table>
+    <widget-pagination #pagination (onPage)="onPageClick($event)"></widget-pagination>
+    <!--// Table list -->
+    
+   
+
+</div>
+<!-- Right Wrap -->

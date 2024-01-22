@@ -1,0 +1,117 @@
+            <!-- Right Wrap -->
+            <div class="container">
+
+                <div class="clear_wrap">
+                    <h1 class="f_l">팝업 {{popup.popupId === undefined ? '등록' : '수정'}}</h1>
+                    <div class="f_r mt_20">Home > 광고 관리 > 팝업 관리 > <span class="fw_600">{{popup.popupId === undefined ? '등록' : '수정'}}</span></div>
+                </div>
+
+                <div class="clear_wrap mt_10">
+                    <div class="f_r view_check"><span class="tb_star">*</span>은 필수 입력 사항입니다.</div>
+                </div>
+                <!-- Table View -->
+                <table class="tb_view01 mt_10">
+                    <colgroup>
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                        <col style="width:150px" />
+                        <col style="width:*" />
+                    </colgroup>
+                    <tr *ngIf="popup.popupId !== undefined">
+                        <th>등록일</th>
+                        <td>{{popup.regName}}</td>
+                        <th>등록일</th>
+                        <td>{{popup.regDt | date: 'yyyy.MM.dd'}}</td>
+                    </tr>
+                    <tr>
+                        <th>노출 기간<span class="tb_star">*</span></th>
+
+                        <td colspan="3">
+                            <input type="text" id="datepicker1" class="mr_5" name="openStartDate"
+                                #openStartDate [(ngModel)]="popup.openStartDate"
+                                (click)="onChangeOpenStartDate(openStartDate.value)"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                            <!-- <select class="ml_10 mr_10" name="openStartHour" [(ngModel)]="popup.openStartHour">
+                                <option value="{{hour | numPad: 2}}" *ngFor="let hour of 24 | numLoop">{{hour | numPad: 2}}시</option>
+                            </select> -->
+                            ~
+                            <input type="text" id="datepicker2" class="mr_5" name="openEndDate"
+                                #openEndDate [(ngModel)]="popup.openEndDate"
+                                (click)="onChangeOpenEndDate(openEndDate.value)"><img class="ui-datepicker-trigger" src="/assets/images/ico_calen.gif">
+                            <!-- <select class="ml_10" name="openEndHour" [(ngModel)]="popup.openEndHour">
+                                <option value="{{hour | numPad: 2}}" *ngFor="let hour of 24 | numLoop">{{hour | numPad: 2}}시</option>
+                            </select> -->
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>노출 여부<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <input type="radio" name="isOpen" value="Y" [(ngModel)]="popup.isOpen" /> 노출
+                            <input type="radio" name="isOpen" value="N" [(ngModel)]="popup.isOpen" class="ml_10"/> 비노출
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>노출 순서</th>
+                        <td colspan="3">
+                            <p><input type="number" placeholder="노출 순서를 입력하세요" class="Width-100" [(ngModel)]="popup.idx" /></p>
+                            <p class="font_14 fs_12 mt_10">* 노출 순서는 총 노출 팝업 개수 범위 내에서만 지정이 가능하며, 미 지정 시 자동으로 마지막 순서로 노출이 됩니다.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>제목<span class="tb_star">*</span></th>
+                        <td colspan="3"><input type="text" placeholder="제목을 입력하세요" class="Width-100" [(ngModel)]="popup.title" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>팝업 이미지<span class="tb_star">*</span></th>
+                        <td colspan="3">
+                            <!-- <p>
+                                <input type="file" />
+                                <a href="#none" class="button02">파일삭제</a>
+                                <a href="#none" class="button02">첨부파일 확인</a>
+                            </p>
+                            <p class="font_14 fs_12 mt_10">* jpg, png 파일 형식의 10MB 이하 용량의 파일만 등록 가능합니다.</p> -->
+                            <widget-file-upload [attachFiles]="imgFile()"
+                                [checkType]='"popup"' [maxCount]="1" [maxSize]="10485760" 
+                                (onView)="onViewAttach($event)"
+                                (onDelete)="onDeleteAttach($event)"></widget-file-upload>
+                        </td>
+                    </tr>
+                    <!-- <tr>
+                        <th>URL 링크</th>
+                        <td colspan="3"><input type="text" placeholder="URL을 입력하세요" value="http://www.naver.com" class="Width-100" />
+                        </td>
+                    </tr> -->
+                    <tr>
+                        <th>연결 화면</th>
+                        <td colspan="3">
+                            <p>
+                                <input type="radio" name="moveType" value="WU" [(ngModel)]="popup.moveType" (change)="onChangeMoveType()" /> URL
+                                <input type="radio" name="moveType" value="NO" [(ngModel)]="popup.moveType" (change)="onChangeMoveType()" /> 공지
+                                <input type="radio" name="moveType" value="ED" [(ngModel)]="popup.moveType" (change)="onChangeMoveType()" /> 교육
+                                <input type="radio" name="moveType" value="SU" [(ngModel)]="popup.moveType" (change)="onChangeMoveType()" /> 설문
+                                <button class="button03 btn_push" (click)="onMoveTargetClick()" *ngIf="popup.moveType === 'NO' || popup.moveType === 'ED' || popup.moveType === 'SU'">연결화면</button>
+                            </p>
+                            <p>
+                                <input type="text" placeholder="URL을 입력하세요" class="Width-100 " name="moveUrl" [(ngModel)]="popup.moveUrl"
+                                    *ngIf="popup.moveType === 'WU'"/>
+                                <input type="text"
+                                    placeholder="연결화면 버튼을 눌러 {{popup.moveType === 'NO' ? '공지' : popup.moveType === 'ED' ? '교육' : popup.moveType === 'SU' ? '설문' : popup.moveType}}를 선택하세요."
+                                    class="Width-100 " name="moveId" disabled
+                                    [(ngModel)]="popup.moveId"
+                                    *ngIf="popup.moveType === 'NO' || popup.moveType === 'ED' || popup.moveType === 'SU'" />
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                <!-- Button -->
+                <div class="btn_wrap text_r mt_20">
+                    <a id="save" class="button01 bg_03" (click)="onBackClick()">목록</a>
+                    <a id="save" class="button01 bg_03" *ngIf="popup.popupId !== undefined" (click)="onDeleteClick()">삭제</a>
+                    <a id="save" class="button01 bg_14" (click)="onSaveClick()">저장</a>
+                </div>
+                <!--// Button -->
+
+            </div>
+            <!-- Right Wrap -->
+
+            <widget-target-selector #targetSelector (onSelect)="onSelectMoveTarget($event)"></widget-target-selector>

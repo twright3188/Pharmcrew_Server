@@ -1,0 +1,6 @@
+                            <p>
+                                <input type="file" #file [accept]="accept()" (change)="onChange()" *ngIf="attachFile === undefined" />
+                                <a class="line" *ngIf="attachFile !== undefined" (click)="onViewClick()">{{attachFile.orgName}}</a>
+                                <a class="button02" (click)="onDeleteClick()" *ngIf="attachFile !== undefined">파일삭제</a>
+                                <!-- <a class="button02" (click)="onViewClick()" *ngIf="attachFile !== undefined">첨부파일 확인</a> -->
+                            </p>
